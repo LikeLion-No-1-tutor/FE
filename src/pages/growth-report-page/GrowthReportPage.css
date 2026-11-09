@@ -1,0 +1,422 @@
+.growth-report-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 28px 40px 32px;
+  background-color: #f6f4f0;
+}
+
+.growth-report-page__header {
+  margin-bottom: 24px;
+}
+
+.growth-report-page__header h1 {
+  margin: 0 0 8px;
+  color: #202a27;
+  font-size: 27px;
+  font-weight: 700;
+}
+
+.growth-report-page__header p {
+  margin: 0;
+  color: #777b77;
+  font-size: 14px;
+}
+
+.growth-report-page__content {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 36px;
+  align-items: start;
+}
+
+.growth-report-page__left,
+.growth-report-page__right {
+  min-width: 0;
+}
+
+.growth-report-page__report-card {
+  min-height: 315px;
+  padding: 24px 28px;
+
+  background-color: #ffffff;
+  border: 1px solid #e4ded5;
+  border-radius: 12px;
+}
+
+.growth-report-page__report-card h2 {
+  margin: 0;
+  color: #202a27;
+  font-size: 19px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.growth-report-page__divider {
+  width: 80%;
+  height: 1px;
+  margin: 16px auto 20px;
+  background-color: #d5d3cf;
+}
+
+.growth-report-page__report-table {
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.growth-report-page__report-row {
+  display: grid;
+  grid-template-columns: 150px 210px;
+  align-items: center;
+  column-gap: 20px;
+}
+
+.growth-report-page__row-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 48px;
+  padding: 0 12px;
+
+  background-color: #e9e9e9;
+  border-radius: 9px;
+
+  color: #202a27;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: center;
+}
+
+.growth-report-page__row-value {
+  color: #202a27;
+  font-size: 15px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.growth-report-page__score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  width: fit-content;
+  padding: 9px 12px;
+
+  background-color: #faf3e1;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.growth-report-page__score strong {
+  color: #202a27;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.growth-report-page__score span {
+  color: #202a27;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.growth-report-page__comparison {
+  margin-top: 30px;
+}
+
+.growth-report-page__comparison h2 {
+  margin: 0 0 14px;
+  color: #202a27;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.growth-report-page__comparison-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  min-height: 104px;
+  padding: 20px 18px;
+
+  background-color: #f0efec;
+  border-radius: 10px;
+}
+
+.growth-report-page__comparison-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.growth-report-page__comparison-item > span {
+  color: #202a27;
+  font-size: 14px;
+}
+
+.growth-report-page__comparison-item strong {
+  color: #202a27;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.growth-report-page__comparison-item strong span {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.growth-report-page__comparison-arrow {
+  color: #202a27;
+  font-size: 22px;
+}
+
+.growth-report-page__score-change {
+  flex-shrink: 0;
+  padding: 14px 12px;
+
+  background-color: #e8f0e5;
+  border-radius: 8px;
+
+  color: #174d3b;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.growth-report-page__score-change--negative {
+  background-color: #fae9e5;
+  color: #bc6557;
+}
+
+.growth-report-page__right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.growth-report-page__feedback {
+  min-height: 125px;
+  padding: 20px 22px;
+
+  border: 1px solid;
+  border-radius: 12px;
+}
+
+.growth-report-page__feedback--good {
+  background-color: #f0f6ee;
+  border-color: #dce8d8;
+}
+
+.growth-report-page__feedback--missed {
+  background-color: #fbefec;
+  border-color: #f0ddda;
+}
+
+.growth-report-page__feedback--review {
+  background-color: #eef3fb;
+  border-color: #dce5f2;
+}
+
+.growth-report-page__feedback-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.growth-report-page__feedback-heading h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.growth-report-page__feedback--good h2 {
+  color: #174d3b;
+}
+
+.growth-report-page__feedback--missed h2 {
+  color: #bc6557;
+}
+
+.growth-report-page__feedback--review h2 {
+  color: #5684c8;
+}
+
+.growth-report-page__feedback-heading img {
+  width: 19px;
+  height: 19px;
+  object-fit: contain;
+}
+
+.growth-report-page__feedback p {
+  margin: 16px 0 0;
+  color: #202a27;
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.growth-report-page__footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.growth-report-page__retry-button,
+.growth-report-page__retest-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  min-height: 44px;
+  padding: 0 18px;
+
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.growth-report-page__retry-button {
+  border: 1px solid #8fac9c;
+  background-color: #ffffff;
+  color: #174d3b;
+}
+
+.growth-report-page__retry-button:hover {
+  background-color: #e8f0e5;
+}
+
+.growth-report-page__retest-button {
+  border: 1px solid #174d3b;
+  background-color: #174d3b;
+  color: #ffffff;
+}
+
+.growth-report-page__retest-button:hover {
+  background-color: #123d2f;
+}
+
+.growth-report-page__retry-button img,
+.growth-report-page__retest-button img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1180px) {
+  .growth-report-page {
+    padding: 28px;
+  }
+
+  .growth-report-page__content {
+    gap: 20px;
+  }
+
+  .growth-report-page__report-card {
+    padding: 22px 18px;
+  }
+
+  .growth-report-page__report-row {
+    grid-template-columns: 125px minmax(0, 1fr);
+    column-gap: 14px;
+  }
+
+  .growth-report-page__comparison-card {
+    gap: 8px;
+    padding: 16px 12px;
+  }
+
+  .growth-report-page__comparison-item strong {
+    font-size: 13px;
+  }
+
+  .growth-report-page__score-change {
+    padding: 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 900px) {
+  .growth-report-page__content {
+    grid-template-columns: 1fr;
+  }
+
+  .growth-report-page__right {
+    gap: 12px;
+  }
+
+  .growth-report-page__feedback {
+    min-height: 0;
+  }
+
+  .growth-report-page__report-table {
+    width: min(100%, 420px);
+  }
+
+  .growth-report-page__report-row {
+    grid-template-columns: 130px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .growth-report-page {
+    padding: 24px 16px;
+  }
+
+  .growth-report-page__header h1 {
+    font-size: 24px;
+  }
+
+  .growth-report-page__report-card {
+    min-height: 0;
+    padding: 20px 14px;
+  }
+
+  .growth-report-page__report-row {
+    grid-template-columns: 110px minmax(0, 1fr);
+    column-gap: 12px;
+  }
+
+  .growth-report-page__row-label {
+    font-size: 12px;
+  }
+
+  .growth-report-page__row-value {
+    font-size: 13px;
+  }
+
+  .growth-report-page__score strong {
+    font-size: 18px;
+  }
+
+  .growth-report-page__score span {
+    font-size: 12px;
+  }
+
+  .growth-report-page__comparison-card {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+  }
+
+  .growth-report-page__footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .growth-report-page__retry-button,
+  .growth-report-page__retest-button {
+    width: 100%;
+  }
+}
