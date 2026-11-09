@@ -12,6 +12,7 @@ import AssessmentPage from "../pages/assessment-page/AssessmentPage";
 import GrowthReportPage from "../pages/growth-report-page/GrowthReportPage";
 import RetestPage from "../pages/retest-page/RetestPage";
 import RetestResultPage from "../pages/retest-result-page/RetestResultPage";
+import SettingsPage from "../pages/settings-page/SettingsPage";
 
 const PagePlaceholder = ({ title }) => {
   return (
@@ -83,8 +84,8 @@ export const AppRouter = createBrowserRouter([
         element: <RetestResultPage />,
       },
       {
-        path: "/settings",
-        element: <PagePlaceholder title="설정" />,
+        path: "settings",
+        element: <SettingsPage />,
       },
     ],
   },

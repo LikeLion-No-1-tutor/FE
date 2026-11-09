@@ -1,0 +1,311 @@
+.settings-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+  background-color: var(--app-page-background, #f6f4f0);
+}
+
+.settings-page__card {
+  width: 100%;
+  max-width: 1000px;
+  margin-top: 40px;
+  padding: 34px 44px 36px;
+
+  background-color: #ffffff;
+  border: 1px solid #e4ded5;
+  border-radius: 12px;
+}
+
+.settings-page__title {
+  margin: 0 0 26px;
+  color: #202a27;
+  font-size: 27px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.settings-page__divider {
+  width: 100%;
+  height: 2px;
+  background-color: #dcd6cc;
+}
+
+.settings-page__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 28px 14px;
+}
+
+.settings-page__nickname-row {
+  min-height: 120px;
+}
+
+.settings-page__account-row {
+  min-height: 140px;
+}
+
+.settings-page__logout-row {
+  min-height: 120px;
+}
+
+.settings-page__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.settings-page__label {
+  color: #999b98;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.settings-page__nickname,
+.settings-page__account {
+  color: #202a27;
+  font-size: 22px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.settings-page__account {
+  font-weight: 400;
+}
+
+.settings-page__outline-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  min-width: 90px;
+  height: 36px;
+  padding: 0 18px;
+
+  background-color: #ffffff;
+  border: 1px solid #e4ded5;
+  border-radius: 20px;
+
+  color: #202a27;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.settings-page__outline-button:hover {
+  background-color: #f6f4f0;
+  border-color: #8fac9c;
+}
+
+.settings-page__check-icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  object-fit: contain;
+  margin-right: 14px;
+}
+
+.settings-page__logout-title {
+  color: #202a27;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.settings-page__logout-description {
+  color: #999b98;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+/* 팝업 */
+
+.settings-page__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+
+  background-color: rgba(32, 42, 39, 0.3);
+}
+
+.settings-page__modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  width: 100%;
+  max-width: 340px;
+  min-height: 250px;
+  padding: 46px 28px 28px;
+
+  background-color: #fefcf8;
+  border: 1px solid #e4ded5;
+  border-radius: 12px;
+
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(32, 42, 39, 0.12);
+}
+
+.settings-page__modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 24px;
+  height: 24px;
+  padding: 0;
+
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.settings-page__modal-close img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.settings-page__modal h2 {
+  margin: 0;
+  color: #202a27;
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.settings-page__nickname-input {
+  width: 100%;
+  height: 42px;
+  margin-top: 40px;
+  padding: 0 8px;
+
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid #777b77;
+  border-radius: 0;
+  outline: none;
+
+  color: #202a27;
+  font-size: 16px;
+  text-align: center;
+}
+
+.settings-page__nickname-input:focus {
+  border-bottom-color: #174d3b;
+}
+
+.settings-page__modal-description {
+  margin: 12px 0 0;
+  color: #999b98;
+  font-size: 12px;
+}
+
+.settings-page__modal-confirm {
+  min-width: 95px;
+  height: 38px;
+  margin-top: 20px;
+  padding: 0 20px;
+
+  background-color: #ffffff;
+  border: 1px solid #e4ded5;
+  border-radius: 20px;
+
+  color: #202a27;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.settings-page__modal-confirm:hover:not(:disabled) {
+  background-color: #e8f0e5;
+}
+
+.settings-page__modal-confirm:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.settings-page__logout-question {
+  margin: 40px 0 0;
+  color: #999b98;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.settings-page__modal-logout {
+  min-width: 116px;
+  height: 38px;
+  margin-top: 26px;
+  padding: 0 20px;
+
+  background-color: #fbefec;
+  border: 1px solid #d8a39a;
+  border-radius: 20px;
+
+  color: #bc6557;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.settings-page__modal-logout:hover {
+  background-color: #f4dfda;
+}
+
+/* 반응형 */
+
+@media (max-width: 1100px) {
+  .settings-page__card {
+    margin-top: 24px;
+    padding: 28px 32px;
+  }
+}
+
+@media (max-width: 760px) {
+  .settings-page__card {
+    margin-top: 12px;
+    padding: 24px 20px;
+  }
+
+  .settings-page__title {
+    font-size: 24px;
+    margin-bottom: 22px;
+  }
+
+  .settings-page__row {
+    padding: 24px 4px;
+  }
+
+  .settings-page__nickname-row,
+  .settings-page__account-row,
+  .settings-page__logout-row {
+    min-height: 110px;
+  }
+
+  .settings-page__nickname,
+  .settings-page__account,
+  .settings-page__logout-title {
+    font-size: 18px;
+  }
+
+  .settings-page__outline-button {
+    min-width: 76px;
+    height: 34px;
+    padding: 0 12px;
+  }
+}
