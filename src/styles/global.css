@@ -1,0 +1,51 @@
+:root {
+  font-family: Pretendard, Arial, sans-serif;
+
+  --color-background: #f6f4f0;
+  --color-paper: #fefcf8;
+  --color-white: #ffffff;
+
+  --color-primary: #174d3b;
+  --color-primary-light: #e8f0e5;
+  --color-primary-hover: #123d2f;
+
+  --color-text: #202a27;
+  --color-text-secondary: #777b77;
+  --color-border: #e4ded5;
+
+  --color-danger: #bc6557;
+  --color-question: #fff0c7;
+  --color-question-border: #e8bc69;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
