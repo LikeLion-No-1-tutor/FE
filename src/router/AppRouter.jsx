@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import MainLayout from "../components/layout/MainLayout";
 import OnboardingPage from "../pages/onboarding-page/OnboardingPage";
+import LoginPage from "../pages/login-page/LoginPage";
 
 const PagePlaceholder = ({ title }) => {
   return (
@@ -23,7 +24,7 @@ export const AppRouter = createBrowserRouter([
   },
   {
     path: "/login",
-    element: <PagePlaceholder title="로그인" />,
+    element: <LoginPage />,
   },
   {
     path: "/nickname",

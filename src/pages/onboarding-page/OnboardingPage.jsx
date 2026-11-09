@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-import logoImage from "../../assets/images/logo.svg";
+import BrandLogo from "../../components/common/BrandLogo";
 import onboardingImage from "../../assets/images/onboarding_image.svg";
 import pencilIcon from "../../assets/icons/pencil.svg";
 import graphIcon from "../../assets/icons/graph.svg";
@@ -18,7 +18,7 @@ function OnboardingPage() {
   return (
     <div className="onboarding">
       <header className="onboarding__header">
-        <img className="onboarding__logo" src={logoImage} alt="티칭로그" />
+        <BrandLogo />
 
         <div className="onboarding__header-buttons">
           <button

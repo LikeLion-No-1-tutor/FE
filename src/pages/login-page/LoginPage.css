@@ -1,0 +1,149 @@
+.login-page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f6f4f0;
+}
+
+.login-page__header {
+  max-width: 1320px;
+  height: 150px;
+  margin: 0 auto;
+  padding: 10px 40px;
+  display: flex;
+  align-items: center;
+}
+
+.login-page__logo {
+  width: 389px;
+  height: 130px;
+  max-height: none;
+  object-fit: contain;
+  object-position: left center;
+  cursor: pointer;
+}
+
+.login-page__main {
+  min-height: calc(100vh - 150px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 24px 88px;
+}
+
+.login-page__card {
+  width: 100%;
+  max-width: 460px;
+  min-height: 460px;
+  padding: 48px 36px 42px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  background-color: #ffffff;
+  border: 1px solid #e4ded5;
+  border-radius: 14px;
+}
+
+.login-page__book-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.login-page__title {
+  margin: 28px 0 0;
+  color: #202a27;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.login-page__description {
+  margin: 20px 0 0;
+  color: #777b77;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.login-page__google-button {
+  width: 100%;
+  max-width: 300px;
+  height: 52px;
+  margin-top: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+
+  background-color: #ffffff;
+  border: 1px solid #e4ded5;
+  border-radius: 8px;
+
+  color: #202a27;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.login-page__google-button img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.login-page__google-button:hover {
+  background-color: #f6f4f0;
+  border-color: #174d3b;
+}
+
+.login-page__notice {
+  margin: 42px 0 0;
+  color: #777b77;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.6;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .login-page__header {
+    height: 76px;
+    padding: 16px 24px;
+  }
+
+  .login-page__logo {
+    width: 175px;
+  }
+
+  .login-page__main {
+    min-height: calc(100vh - 76px);
+    padding: 20px 20px 64px;
+  }
+
+  .login-page__card {
+    max-width: 440px;
+    min-height: 420px;
+    padding: 40px 24px;
+  }
+
+  .login-page__title {
+    font-size: 23px;
+  }
+
+  .login-page__description {
+    font-size: 13px;
+  }
+
+  .login-page__google-button {
+    margin-top: 36px;
+  }
+
+  .login-page__notice {
+    margin-top: 36px;
+  }
+}

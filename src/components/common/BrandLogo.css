@@ -1,0 +1,18 @@
+.brand-logo {
+  width: 389px;
+  height: 130px;
+  max-height: none;
+  object-fit: contain;
+  object-position: left center;
+  position: relative;
+  left: -80px;
+  cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .brand-logo {
+    width: 175px;
+    height: 60px;
+    left: 0;
+  }
+}
