@@ -5,6 +5,7 @@ import OnboardingPage from "../pages/onboarding-page/OnboardingPage";
 import LoginPage from "../pages/login-page/LoginPage";
 import NicknamePage from "../pages/nickname-page/NicknamePage";
 import HomePage from "../pages/home-page/HomePage";
+import UploadPage from "../pages/upload-page/UploadPage";
 
 const PagePlaceholder = ({ title }) => {
   return (
@@ -41,7 +42,7 @@ export const AppRouter = createBrowserRouter([
       },
       {
         path: "/upload",
-        element: <PagePlaceholder title="자료 제출" />,
+        element: <UploadPage />,
       },
       {
         path: "/teaching",
