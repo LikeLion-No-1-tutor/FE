@@ -9,6 +9,7 @@ import UploadPage from "../pages/upload-page/UploadPage";
 import TeachingPage from "../pages/teaching-page/TeachingPage";
 import NotePage from "../pages/note-page/NotePage";
 import AssessmentPage from "../pages/assessment-page/AssessmentPage";
+import GrowthReportPage from "../pages/growth-report-page/GrowthReportPage";
 
 const PagePlaceholder = ({ title }) => {
   return (
@@ -69,7 +70,7 @@ export const AppRouter = createBrowserRouter([
       },
       {
         path: "/reports/:reportId",
-        element: <PagePlaceholder title="성장보고서 상세" />,
+        element: <GrowthReportPage />,
       },
       {
         path: "/retest",
