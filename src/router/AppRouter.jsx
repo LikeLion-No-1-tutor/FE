@@ -7,6 +7,7 @@ import NicknamePage from "../pages/nickname-page/NicknamePage";
 import HomePage from "../pages/home-page/HomePage";
 import UploadPage from "../pages/upload-page/UploadPage";
 import TeachingPage from "../pages/teaching-page/TeachingPage";
+import NoteListPage from "../pages/note-list-page/NoteListPage";
 import NotePage from "../pages/note-page/NotePage";
 import AssessmentPage from "../pages/assessment-page/AssessmentPage";
 import GrowthReportPage from "../pages/growth-report-page/GrowthReportPage";
@@ -56,12 +57,12 @@ export const AppRouter = createBrowserRouter([
         element: <TeachingPage />,
       },
       {
-        path: "/notes/:noteId",
-        element: <NotePage />,
+        path: "/notes",
+        element: <NoteListPage />,
       },
       {
         path: "/notes/:noteId",
-        element: <PagePlaceholder title="정리노트 상세" />,
+        element: <NotePage />,
       },
       {
         path: "/assessment",
@@ -84,7 +85,7 @@ export const AppRouter = createBrowserRouter([
         element: <RetestResultPage />,
       },
       {
-        path: "settings",
+        path: "/settings",
         element: <SettingsPage />,
       },
     ],
