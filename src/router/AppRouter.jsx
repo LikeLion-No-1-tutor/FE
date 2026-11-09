@@ -10,6 +10,7 @@ import TeachingPage from "../pages/teaching-page/TeachingPage";
 import NotePage from "../pages/note-page/NotePage";
 import AssessmentPage from "../pages/assessment-page/AssessmentPage";
 import GrowthReportPage from "../pages/growth-report-page/GrowthReportPage";
+import RetestPage from "../pages/retest-page/RetestPage";
 
 const PagePlaceholder = ({ title }) => {
   return (
@@ -74,7 +75,7 @@ export const AppRouter = createBrowserRouter([
       },
       {
         path: "/retest",
-        element: <PagePlaceholder title="사용자 재시험" />,
+        element: <RetestPage />,
       },
       {
         path: "/retest/result",
