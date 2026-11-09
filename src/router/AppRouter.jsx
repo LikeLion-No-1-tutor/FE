@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout";
 import OnboardingPage from "../pages/onboarding-page/OnboardingPage";
 import LoginPage from "../pages/login-page/LoginPage";
+import NicknamePage from "../pages/nickname-page/NicknamePage";
 
 const PagePlaceholder = ({ title }) => {
   return (
@@ -28,7 +29,7 @@ export const AppRouter = createBrowserRouter([
   },
   {
     path: "/nickname",
-    element: <PagePlaceholder title="닉네임 설정" />,
+    element: <NicknamePage />,
   },
   {
     element: <MainLayout />,

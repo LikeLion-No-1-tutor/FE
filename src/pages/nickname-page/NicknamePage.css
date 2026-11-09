@@ -1,0 +1,158 @@
+.nickname-page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f6f4f0;
+}
+
+.nickname-page__header {
+  width: 100%;
+  max-width: 1320px;
+  height: 150px;
+  margin: 0 auto;
+  padding: 10px 40px;
+
+  display: flex;
+  align-items: center;
+}
+
+.nickname-page__main {
+  min-height: calc(100vh - 150px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px 24px 88px;
+}
+
+.nickname-page__card {
+  width: 100%;
+  max-width: 460px;
+  min-height: 440px;
+  padding: 38px 44px 40px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  background-color: #ffffff;
+  border: 1px solid #e4ded5;
+  border-radius: 14px;
+}
+
+.nickname-page__profile-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.nickname-page__title {
+  margin: 24px 0 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #202a27;
+  text-align: center;
+}
+
+.nickname-page__description {
+  margin: 16px 0 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #777b77;
+  text-align: center;
+}
+
+.nickname-page__field {
+  width: 100%;
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.nickname-page__label {
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #202a27;
+}
+
+.nickname-page__input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+
+  border: 1px solid #e4ded5;
+  border-radius: 8px;
+  outline: none;
+
+  background-color: #ffffff;
+  color: #202a27;
+  font-size: 15px;
+}
+
+.nickname-page__input::placeholder {
+  color: #aaaaaa;
+}
+
+.nickname-page__input:focus {
+  border-color: #174d3b;
+}
+
+.nickname-page__helper {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #777b77;
+}
+
+.nickname-page__submit {
+  width: 100%;
+  height: 48px;
+  margin-top: auto;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+
+  border: none;
+  border-radius: 8px;
+  background-color: #aaaaaa;
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 700;
+  cursor: not-allowed;
+}
+
+.nickname-page__submit--active {
+  background-color: #174d3b;
+  cursor: pointer;
+}
+
+.nickname-page__submit--active:hover {
+  background-color: #123d2f;
+}
+
+@media (max-width: 760px) {
+  .nickname-page__header {
+    height: 76px;
+    padding: 16px 24px;
+  }
+
+  .nickname-page__main {
+    min-height: calc(100vh - 76px);
+    padding: 20px 20px 64px;
+  }
+
+  .nickname-page__card {
+    min-height: 420px;
+    padding: 36px 24px;
+  }
+
+  .nickname-page__title {
+    font-size: 21px;
+  }
+
+  .nickname-page__description {
+    font-size: 13px;
+  }
+}
