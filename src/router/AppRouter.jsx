@@ -8,6 +8,7 @@ import HomePage from "../pages/home-page/HomePage";
 import UploadPage from "../pages/upload-page/UploadPage";
 import TeachingPage from "../pages/teaching-page/TeachingPage";
 import NotePage from "../pages/note-page/NotePage";
+import AssessmentPage from "../pages/assessment-page/AssessmentPage";
 
 const PagePlaceholder = ({ title }) => {
   return (
@@ -60,7 +61,7 @@ export const AppRouter = createBrowserRouter([
       },
       {
         path: "/assessment",
-        element: <PagePlaceholder title="학생 AI 평가" />,
+        element: <AssessmentPage />,
       },
       {
         path: "/reports",
