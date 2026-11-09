@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
-
+import { useLocation, useNavigate } from "react-router-dom";
+import PageHeader from "../../components/common/PageHeader";
 import "./RetestPage.css";
 
 const demoQuestions = [
@@ -50,6 +50,7 @@ const typeLabels = {
 };
 
 function RetestPage() {
+  const navigate = useNavigate();
   const location = useLocation();
 
   const topic = location.state?.topic || "스택과 큐";
@@ -57,7 +58,6 @@ function RetestPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [showSubmitModal, setShowSubmitModal] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const question = demoQuestions[currentIndex];
   const totalCount = demoQuestions.length;
@@ -92,7 +92,6 @@ function RetestPage() {
 
   const handleSubmitConfirm = () => {
     setShowSubmitModal(false);
-    setIsSubmitted(true);
 
     sessionStorage.setItem(
       "demoRetestAnswers",
@@ -101,48 +100,21 @@ function RetestPage() {
         answers,
       }),
     );
+
+    navigate("/retest/result", {
+      state: {
+        topic,
+        answers,
+      },
+    });
   };
 
-  if (isSubmitted) {
-    return (
-      <div className="retest-page">
-        <div className="retest-page__complete">
-          <div className="retest-page__complete-icon">✓</div>
-
-          <h1>답안 제출 완료!</h1>
-
-          <p>
-            총 {totalCount}문제 중 {answeredCount}문제에 답변했어요.
-          </p>
-
-          <p className="retest-page__complete-description">
-            지금은 프론트엔드 테스트 단계이므로 채점 결과는 아직 제공되지
-            않아요.
-          </p>
-
-          <button
-            type="button"
-            onClick={() => {
-              setCurrentIndex(0);
-              setAnswers({});
-              setIsSubmitted(false);
-            }}
-          >
-            다시 풀어보기
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="retest-page">
-      <header className="retest-page__header">
-        <h1>직접 재시험 보기</h1>
-        <p>
-          {topic} · 총 {totalCount}문제
-        </p>
-      </header>
+    <div className="app-page retest-page">
+      <PageHeader
+        title="직접 재시험 보기"
+        description={`${topic} · 총 ${totalCount}문제`}
+      />
 
       <div className="retest-page__progress-header">
         <strong>

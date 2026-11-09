@@ -1,53 +1,41 @@
 .assessment-page {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  min-height: 100vh;
-  padding: 36px 40px 32px;
-  background-color: var(--color-background, #f6f4f0);
-}
-
-.assessment-page__header {
-  margin-bottom: 30px;
-}
-
-.assessment-page__header h1 {
-  margin: 0 0 10px;
-  color: #202a27;
-  font-size: 27px;
-  font-weight: 700;
-}
-
-.assessment-page__header p {
-  margin: 0;
-  color: #777b77;
-  font-size: 14px;
-  line-height: 1.5;
+  min-width: 0;
+  background-color: var(--app-page-background, #f6f4f0);
 }
 
 .assessment-page__content {
   display: grid;
-  grid-template-columns: minmax(240px, 0.85fr) minmax(0, 1.6fr);
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.6fr);
   gap: 20px;
   align-items: stretch;
 }
 
 .assessment-page__student-card,
 .assessment-page__question-card {
+  min-width: 0;
   min-height: 450px;
   background-color: #ffffff;
   border: 1px solid #e4ded5;
   border-radius: 12px;
+  box-sizing: border-box;
 }
 
 .assessment-page__student-card {
-  padding: 20px 26px 25px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 20px 26px 25px;
 }
 
 .assessment-page__profile {
+  display: block;
   width: 300px;
   height: 300px;
+  max-width: 100%;
+  flex-shrink: 1;
   object-fit: contain;
 }
 
@@ -56,13 +44,17 @@
   color: #202a27;
   font-size: 21px;
   font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
 }
 
 .assessment-page__student-level {
   margin: 0;
   color: #777b77;
   font-size: 14px;
+  font-weight: 400;
   line-height: 1.4;
+  text-align: center;
 }
 
 .assessment-page__progress-section {
@@ -83,14 +75,14 @@
   width: 100%;
   height: 11px;
   overflow: hidden;
-  border-radius: 20px;
   background-color: #e9e9e9;
+  border-radius: 20px;
 }
 
 .assessment-page__progress-fill {
   height: 100%;
-  border-radius: 20px;
   background-color: #174d3b;
+  border-radius: 20px;
   transition: width 0.5s ease;
 }
 
@@ -121,11 +113,11 @@
 }
 
 .assessment-page__question-item {
-  min-height: 70px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+  min-height: 70px;
   padding: 12px 4px;
 }
 
@@ -152,6 +144,7 @@
   font-size: 15px;
   line-height: 1.6;
   overflow-wrap: anywhere;
+  word-break: keep-all;
 }
 
 .assessment-page__question-status {
@@ -179,15 +172,19 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
+
   min-width: 150px;
   height: 46px;
   padding: 0 20px;
+
   border: none;
   border-radius: 8px;
   background-color: #174d3b;
+
   color: #ffffff;
   font-size: 15px;
   font-weight: 700;
+  cursor: pointer;
 }
 
 .assessment-page__result-button:hover:not(:disabled) {
@@ -200,17 +197,13 @@
 }
 
 @media (max-width: 1100px) {
-  .assessment-page {
-    padding: 32px 28px;
-  }
-
   .assessment-page__content {
-    grid-template-columns: minmax(210px, 0.85fr) minmax(0, 1.5fr);
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.5fr);
     gap: 16px;
   }
 
   .assessment-page__student-card {
-    padding: 26px 18px;
+    padding: 20px 18px 24px;
   }
 
   .assessment-page__question-card {
@@ -218,8 +211,12 @@
   }
 
   .assessment-page__profile {
-    width: 120px;
-    height: 120px;
+    width: min(100%, 240px);
+    height: 240px;
+  }
+
+  .assessment-page__progress-section {
+    padding-top: 30px;
   }
 }
 
@@ -234,11 +231,17 @@
   }
 
   .assessment-page__student-card {
-    padding: 28px;
+    padding: 24px;
+  }
+
+  .assessment-page__profile {
+    width: 200px;
+    height: 200px;
   }
 
   .assessment-page__progress-section {
-    margin-top: 32px;
+    margin-top: 28px;
+    padding-top: 0;
   }
 
   .assessment-page__question-item {
@@ -247,12 +250,8 @@
 }
 
 @media (max-width: 480px) {
-  .assessment-page {
-    padding: 24px 16px;
-  }
-
-  .assessment-page__header h1 {
-    font-size: 24px;
+  .assessment-page__question-card {
+    padding: 20px 16px;
   }
 
   .assessment-page__question-card h2 {
@@ -265,6 +264,14 @@
 
   .assessment-page__question-info {
     gap: 10px;
+  }
+
+  .assessment-page__student-name {
+    font-size: 19px;
+  }
+
+  .assessment-page__footer {
+    margin-top: 20px;
   }
 }
 

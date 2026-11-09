@@ -190,7 +190,7 @@ function TeachingPage() {
   };
 
   return (
-    <div className="teaching-page">
+    <div className="app-page teaching-page">
       <header className="teaching-page__topbar">
         <div className="teaching-page__title-wrap">
           <button

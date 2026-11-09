@@ -30,17 +30,16 @@ const recentClasses = [
 
 function HomePage() {
   const navigate = useNavigate();
-
   const nickname = sessionStorage.getItem("nickname") || "OO";
 
   return (
-    <div className="home-page">
+    <div className="app-page home-page">
       <header className="home-page__header">
         <h1>{nickname} 선생님!</h1>
         <p>오늘은 어떤 개념을 가르쳐 볼까요?</p>
       </header>
 
-      <section className="home-page__actions">
+      <section className="home-page__actions" aria-label="수업 바로가기">
         <button
           type="button"
           className="home-page__action home-page__action--primary"
@@ -78,7 +77,7 @@ function HomePage() {
             className="home-page__more"
             onClick={() => navigate("/notes")}
           >
-            더보기
+            <span>더보기</span>
             <span aria-hidden="true">›</span>
           </button>
         </div>
@@ -101,6 +100,7 @@ function HomePage() {
 
               <div className="home-page__recent-right">
                 <span className="home-page__recent-date">{item.date}</span>
+
                 <span className="home-page__chevron" aria-hidden="true">
                   ›
                 </span>

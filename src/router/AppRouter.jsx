@@ -11,6 +11,7 @@ import NotePage from "../pages/note-page/NotePage";
 import AssessmentPage from "../pages/assessment-page/AssessmentPage";
 import GrowthReportPage from "../pages/growth-report-page/GrowthReportPage";
 import RetestPage from "../pages/retest-page/RetestPage";
+import RetestResultPage from "../pages/retest-result-page/RetestResultPage";
 
 const PagePlaceholder = ({ title }) => {
   return (
@@ -79,7 +80,7 @@ export const AppRouter = createBrowserRouter([
       },
       {
         path: "/retest/result",
-        element: <PagePlaceholder title="재시험 결과" />,
+        element: <RetestResultPage />,
       },
       {
         path: "/settings",

@@ -1,25 +1,9 @@
 .retest-page {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  min-height: 100vh;
-  padding: 36px 40px;
-  background-color: #f6f4f0;
-}
-
-.retest-page__header {
-  margin-bottom: 32px;
-}
-
-.retest-page__header h1 {
-  margin: 0 0 8px;
-  color: #202a27;
-  font-size: 27px;
-  font-weight: 700;
-}
-
-.retest-page__header p {
-  margin: 0;
-  color: #777b77;
-  font-size: 14px;
+  min-width: 0;
+  background-color: var(--app-page-background, #f6f4f0);
 }
 
 .retest-page__progress-header {
@@ -374,13 +358,6 @@
 }
 
 @media (max-width: 760px) {
-  .retest-page {
-    padding: 26px 18px;
-  }
-
-  .retest-page__header h1 {
-    font-size: 24px;
-  }
 
   .retest-page__question-card {
     padding: 24px 18px;

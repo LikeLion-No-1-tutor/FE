@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import PageHeader from "../../components/common/PageHeader";
+
 import harinImage from "../../assets/images/assessment-harin.svg";
 import doyoonImage from "../../assets/images/assessment-doyoon.svg";
 import seoyoonImage from "../../assets/images/assessment-seoyoon.svg";
@@ -94,11 +96,11 @@ function AssessmentPage() {
   };
 
   return (
-    <div className="assessment-page">
-      <header className="assessment-page__header">
-        <h1>학생 AI 평가</h1>
-        <p>평가가 출제된 문제를 학생 AI가 풀고 있어요.</p>
-      </header>
+    <div className="app-page assessment-page">
+      <PageHeader
+        title="학생 AI 평가"
+        description="평가가 출제된 문제를 학생 AI가 풀고 있어요."
+      />
 
       <div className="assessment-page__content">
         <section className="assessment-page__student-card">
@@ -181,7 +183,7 @@ function AssessmentPage() {
           onClick={handleViewResult}
           disabled={!isCompleted}
         >
-          결과 보기
+          <span>결과 보기</span>
           <span aria-hidden="true">→</span>
         </button>
       </div>
