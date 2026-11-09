@@ -14,15 +14,7 @@ import GrowthReportPage from "../pages/growth-report-page/GrowthReportPage";
 import RetestPage from "../pages/retest-page/RetestPage";
 import RetestResultPage from "../pages/retest-result-page/RetestResultPage";
 import SettingsPage from "../pages/settings-page/SettingsPage";
-
-const PagePlaceholder = ({ title }) => {
-  return (
-    <div style={{ padding: "48px" }}>
-      <h1>{title}</h1>
-      <p>티칭로그 페이지를 구현할 예정입니다.</p>
-    </div>
-  );
-};
+import GrowthReportListPage from "../pages/growth-report-list-page/GrowthReportListPage";
 
 export const AppRouter = createBrowserRouter([
   {
@@ -70,7 +62,7 @@ export const AppRouter = createBrowserRouter([
       },
       {
         path: "/reports",
-        element: <PagePlaceholder title="성장보고서 목록" />,
+        element: <GrowthReportListPage />,
       },
       {
         path: "/reports/:reportId",

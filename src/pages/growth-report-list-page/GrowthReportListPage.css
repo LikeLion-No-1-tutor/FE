@@ -1,0 +1,374 @@
+.growth-report-list-page {
+  width: 100%;
+  min-width: 0;
+  background-color: var(--app-page-background, #f6f4f0);
+}
+
+.growth-report-list-page__filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 28px;
+}
+
+.growth-report-list-page__search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  padding: 0 16px;
+
+  background-color: #ffffff;
+  border: 1px solid #e4ded5;
+  border-radius: 9px;
+}
+
+.growth-report-list-page__search:focus-within {
+  border-color: #8fac9c;
+}
+
+.growth-report-list-page__search img {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.growth-report-list-page__search input {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  padding: 0;
+
+  border: none;
+  outline: none;
+  background: transparent;
+
+  color: #202a27;
+  font-size: 14px;
+}
+
+.growth-report-list-page__search input::placeholder {
+  color: #a4a6a2;
+}
+
+.growth-report-list-page__select-wrapper {
+  position: relative;
+  width: 180px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.growth-report-list-page__category {
+  width: 100%;
+  height: 100%;
+  padding: 0 44px 0 15px;
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  background-color: #ffffff;
+  border: 1px solid #e4ded5;
+  border-radius: 9px;
+
+  color: #202a27;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.growth-report-list-page__category:focus {
+  outline: none;
+  border-color: #8fac9c;
+}
+
+.growth-report-list-page__select-arrow {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+
+  width: 16px;
+  height: 16px;
+
+  transform: translateY(-50%) rotate(-90deg);
+  pointer-events: none;
+}
+
+.growth-report-list-page__list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.growth-report-list-page__list-header h2 {
+  margin: 0;
+  color: #202a27;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.growth-report-list-page__sort-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.growth-report-list-page__sort {
+  min-width: 100px;
+  height: 30px;
+  padding: 0 36px 0 10px;
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  border: none;
+  outline: none;
+  background: transparent;
+
+  color: #777b77;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.growth-report-list-page__sort-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+
+  width: 15px;
+  height: 15px;
+
+  transform: translateY(-50%) rotate(-90deg);
+  pointer-events: none;
+}
+
+.growth-report-list-page__list {
+  width: 100%;
+  padding: 0 20px;
+
+  background-color: #ffffff;
+  border: 1px solid #eee9e1;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.growth-report-list-page__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  width: 100%;
+  min-height: 66px;
+  padding: 10px 6px;
+
+  border: none;
+  border-bottom: 1px solid #eeeae4;
+  background: transparent;
+
+  color: #202a27;
+  text-align: left;
+  cursor: pointer;
+}
+
+.growth-report-list-page__item:last-child {
+  border-bottom: none;
+}
+
+.growth-report-list-page__item:hover {
+  background-color: #faf9f5;
+}
+
+.growth-report-list-page__document {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 38px;
+  height: 38px;
+
+  background-color: #f3f3ef;
+  border-radius: 7px;
+}
+
+.growth-report-list-page__document img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.growth-report-list-page__item-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+
+  flex: 1;
+  min-width: 0;
+}
+
+.growth-report-list-page__item-info strong {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: #202a27;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.growth-report-list-page__item-info > span {
+  color: #999b98;
+  font-size: 11px;
+}
+
+.growth-report-list-page__badges {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: 220px;
+  flex-shrink: 0;
+}
+
+.growth-report-list-page__category-tag,
+.growth-report-list-page__score-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  min-width: 62px;
+  height: 24px;
+  padding: 0 12px;
+
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.growth-report-list-page__category-tag {
+  background-color: #f1efea;
+  color: #72746e;
+}
+
+.growth-report-list-page__score-tag--excellent {
+  background-color: #e8f0e5;
+  color: #54705c;
+}
+
+.growth-report-list-page__score-tag--good {
+  background-color: #e8f0e5;
+  color: #54705c;
+}
+
+.growth-report-list-page__score-tag--average {
+  background-color: #f8f0d9;
+  color: #9a8648;
+}
+
+.growth-report-list-page__score-tag--low {
+  background-color: #fbefec;
+  color: #bc6557;
+}
+
+.growth-report-list-page__date {
+  width: 140px;
+  flex-shrink: 0;
+
+  color: #999b98;
+  font-size: 12px;
+  text-align: right;
+}
+
+.growth-report-list-page__item-arrow {
+  width: 18px;
+  height: 18px;
+  margin-left: 10px;
+  flex-shrink: 0;
+  object-fit: contain;
+  transform: rotate(-180deg);
+}
+
+.growth-report-list-page__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+
+  color: #999b98;
+  font-size: 14px;
+}
+
+@media (max-width: 1100px) {
+  .growth-report-list-page__badges {
+    width: 170px;
+  }
+
+  .growth-report-list-page__date {
+    width: 100px;
+  }
+}
+
+@media (max-width: 760px) {
+  .growth-report-list-page__filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .growth-report-list-page__search {
+    flex: none;
+    width: 100%;
+  }
+
+  .growth-report-list-page__select-wrapper {
+    width: 100%;
+  }
+
+  .growth-report-list-page__list {
+    padding: 0 10px;
+  }
+
+  .growth-report-list-page__item {
+    gap: 10px;
+  }
+
+  .growth-report-list-page__badges {
+    width: auto;
+    gap: 6px;
+  }
+
+  .growth-report-list-page__date {
+    display: none;
+  }
+
+  .growth-report-list-page__item-arrow {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .growth-report-list-page__document {
+    width: 32px;
+    height: 32px;
+  }
+
+  .growth-report-list-page__item-info strong {
+    font-size: 13px;
+  }
+
+  .growth-report-list-page__category-tag {
+    display: none;
+  }
+
+  .growth-report-list-page__score-tag {
+    min-width: 50px;
+    padding: 0 8px;
+  }
+}
