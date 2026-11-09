@@ -4,6 +4,7 @@ import MainLayout from "../components/layout/MainLayout";
 import OnboardingPage from "../pages/onboarding-page/OnboardingPage";
 import LoginPage from "../pages/login-page/LoginPage";
 import NicknamePage from "../pages/nickname-page/NicknamePage";
+import HomePage from "../pages/home-page/HomePage";
 
 const PagePlaceholder = ({ title }) => {
   return (
@@ -36,7 +37,7 @@ export const AppRouter = createBrowserRouter([
     children: [
       {
         path: "/home",
-        element: <PagePlaceholder title="홈" />,
+        element: <HomePage />,
       },
       {
         path: "/upload",
