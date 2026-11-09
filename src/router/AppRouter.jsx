@@ -6,6 +6,7 @@ import LoginPage from "../pages/login-page/LoginPage";
 import NicknamePage from "../pages/nickname-page/NicknamePage";
 import HomePage from "../pages/home-page/HomePage";
 import UploadPage from "../pages/upload-page/UploadPage";
+import TeachingPage from "../pages/teaching-page/TeachingPage";
 
 const PagePlaceholder = ({ title }) => {
   return (
@@ -46,7 +47,7 @@ export const AppRouter = createBrowserRouter([
       },
       {
         path: "/teaching",
-        element: <PagePlaceholder title="가르치기" />,
+        element: <TeachingPage />,
       },
       {
         path: "/notes",
