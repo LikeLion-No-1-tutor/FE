@@ -17,13 +17,15 @@
   --color-question: #fff0c7;
   --color-question-border: #e8bc69;
 
-  --page-padding-x: 40px;
-  --page-padding-y: 28px;
+  --app-page-padding-x: 40px;
+  --app-page-padding-y: 28px;
+  --app-page-background: #f6f4f0;
 
-  --page-title-size: 26px;
+  --page-title-size: 27px;
   --page-section-gap: 24px;
 
-  --page-card-radius: 12px;
+  --app-card-radius: 12px;
+  --app-card-border: #e4ded5;
 }
 
 * {
@@ -56,4 +58,20 @@ button {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+.app-page {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  padding: var(--app-page-padding-y) var(--app-page-padding-x);
+  background-color: var(--app-page-background);
+}
+
+@media (max-width: 760px) {
+  :root {
+    --app-page-padding-x: 16px;
+    --app-page-padding-y: 24px;
+    --page-title-size: 24px;
+  }
 }

@@ -1,5 +1,7 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
+import PageHeader from "../../components/common/PageHeader";
+
 import goodIcon from "../../assets/icons/good.svg";
 import badIcon from "../../assets/icons/bad.svg";
 import retryBlueIcon from "../../assets/icons/retry-blue.svg";
@@ -84,11 +86,11 @@ function GrowthReportPage() {
   };
 
   return (
-    <div className="growth-report-page">
-      <header className="growth-report-page__header">
-        <h1>성장보고서</h1>
-        <p>오늘의 수업 결과를 확인해 보세요.</p>
-      </header>
+    <div className="app-page growth-report-page">
+      <PageHeader
+        title="성장보고서"
+        description="오늘의 수업 결과를 확인해 보세요."
+      />
 
       <div className="growth-report-page__content">
         <div className="growth-report-page__left">
@@ -135,6 +137,7 @@ function GrowthReportPage() {
             <div className="growth-report-page__comparison-card">
               <div className="growth-report-page__comparison-item">
                 <span>이전 수업 {previousScore}점</span>
+
                 <strong>
                   {report.previousCorrectAnswers}/{report.totalQuestions}
                   <span> ({previousScore}점)</span>
@@ -150,6 +153,7 @@ function GrowthReportPage() {
 
               <div className="growth-report-page__comparison-item">
                 <span>이번 수업 {currentScore}점</span>
+
                 <strong>
                   {report.correctAnswers}/{report.totalQuestions}
                   <span> ({currentScore}점)</span>

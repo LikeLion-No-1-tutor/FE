@@ -1,47 +1,27 @@
 .note-page {
-  width: 100%;
-  min-height: 100vh;
-  padding: var(--page-padding-y) var(--page-padding-x);
-  background-color: var(--color-background);
-}
-
-.note-page__header {
   display: flex;
-  align-items: baseline;
-  gap: 28px;
-  margin-bottom: 36px;
-}
-
-.note-page__header h1 {
-  margin: 0;
-  color: #202a27;
-  font-size: 30px;
-  font-weight: 700;
-}
-
-.note-page__header p {
-  margin: 0;
-  color: #777b77;
-  font-size: 14px;
-  font-weight: 400;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  background-color: var(--app-page-background, #f6f4f0);
 }
 
 .note-page__notebook {
   position: relative;
   width: 100%;
-  min-height: 550px;
-  padding: 34px 40px 38px 64px;
+  min-height: 500px;
+  padding: 28px 36px 30px 60px;
 
-  background-color: #fefcf8;
-  border: 1px solid #e4ded5;
+  background-color: var(--color-paper, #fefcf8);
+  border: 1px solid var(--color-border, #e4ded5);
   border-radius: 14px;
   box-shadow: 0 3px 9px rgba(32, 42, 39, 0.025);
 }
 
 .note-page__binding {
   position: absolute;
-  top: 22px;
-  bottom: 22px;
+  top: 20px;
+  bottom: 20px;
   left: -14px;
 
   display: flex;
@@ -89,18 +69,19 @@
 
 .note-page__notebook-inner {
   width: 100%;
+  min-width: 0;
 }
 
 .note-page__note-title {
   width: min(100%, 640px);
-  margin-bottom: 28px;
-  padding-bottom: 18px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
   border-bottom: 1px solid #d5d3cf;
 }
 
 .note-page__note-title h2 {
   margin: 0;
-  color: #202a27;
+  color: var(--color-text);
   font-size: 27px;
   font-weight: 700;
 }
@@ -109,7 +90,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 270px;
   align-items: start;
-  gap: 38px;
+  gap: 32px;
 }
 
 .note-page__note-content {
@@ -117,25 +98,24 @@
 }
 
 .note-page__section {
-  padding: 0 0 10px;
+  padding: 0 0 8px;
 }
 
 .note-page__section-label {
   display: inline-flex;
   align-items: center;
   min-height: 30px;
-
-  margin: 0 0 18px;
+  margin: 0 0 16px;
   padding: 4px 15px;
-  border-radius: 8px;
 
-  color: #202a27;
+  border-radius: 8px;
+  color: var(--color-text);
   font-size: 16px;
   font-weight: 700;
 }
 
 .note-page__section-label--concept {
-  background-color: #e8f0e5;
+  background-color: var(--color-primary-light);
 }
 
 .note-page__section-label--example {
@@ -145,15 +125,16 @@
 .note-page__bullet-list {
   margin: 0;
   padding-left: 25px;
-  color: #202a27;
+  color: var(--color-text);
 }
 
 .note-page__bullet-list li {
   padding-left: 2px;
-  margin-bottom: 13px;
+  margin-bottom: 12px;
   font-size: 15px;
-  line-height: 1.8;
+  line-height: 1.7;
   overflow-wrap: anywhere;
+  word-break: keep-all;
 }
 
 .note-page__bullet-list strong {
@@ -163,7 +144,7 @@
 .note-page__section-divider {
   width: 100%;
   height: 1px;
-  margin: 20px 0 28px;
+  margin: 18px 0 24px;
   background-color: #dcd9d3;
 }
 
@@ -178,7 +159,7 @@
 
 .note-page__keywords h3 {
   margin: 0;
-  color: #202a27;
+  color: var(--color-text);
   font-size: 18px;
   font-weight: 700;
 }
@@ -203,8 +184,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-
-  color: #202a27;
+  color: var(--color-text);
   font-size: 15px;
 }
 
@@ -212,25 +192,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 21px;
   height: 21px;
   flex-shrink: 0;
 
-  border: 1.5px solid #174d3b;
+  border: 1.5px solid var(--color-primary);
   border-radius: 5px;
+
   color: #ffffff;
   font-size: 14px;
   font-weight: 700;
 }
 
 .note-page__keyword-checkbox--checked {
-  background-color: #174d3b;
+  background-color: var(--color-primary);
 }
 
 .note-page__keyword-summary {
   margin: 24px 0 0;
-  color: #777b77;
+  color: var(--color-text-secondary);
   font-size: 12px;
   text-align: right;
 }
@@ -238,7 +218,7 @@
 .note-page__footer {
   display: flex;
   justify-content: flex-end;
-  margin-top: 32px;
+  margin-top: 24px;
 }
 
 .note-page__assessment-button {
@@ -253,7 +233,7 @@
 
   border: none;
   border-radius: 8px;
-  background-color: #174d3b;
+  background-color: var(--color-primary);
 
   color: #ffffff;
   font-size: 15px;
@@ -262,16 +242,12 @@
 }
 
 .note-page__assessment-button:hover {
-  background-color: #123d2f;
+  background-color: var(--color-primary-hover);
 }
 
 @media (max-width: 1200px) {
-  .note-page {
-    padding: 40px 32px;
-  }
-
   .note-page__notebook {
-    padding: 32px 26px 36px 50px;
+    padding: 28px 26px 30px 50px;
   }
 
   .note-page__note-grid {
@@ -291,28 +267,9 @@
 }
 
 @media (max-width: 760px) {
-  .note-page {
-    padding: 28px 16px 44px;
-  }
-
-  .note-page__header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 26px;
-  }
-
-  .note-page__header h1 {
-    font-size: 25px;
-  }
-
-  .note-page__header p {
-    font-size: 13px;
-  }
-
   .note-page__notebook {
-    padding: 28px 18px 30px 34px;
     min-height: 0;
+    padding: 28px 18px 30px 34px;
   }
 
   .note-page__binding {

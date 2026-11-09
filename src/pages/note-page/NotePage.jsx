@@ -1,5 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 
+import PageHeader from "../../components/common/PageHeader";
+
 import "./NotePage.css";
 
 const demoNote = {
@@ -59,6 +61,7 @@ function NotePage() {
   const { noteId } = useParams();
 
   const note = demoNote;
+
   const checkedCount = note.keywords.filter(
     (keyword) => keyword.checked,
   ).length;
@@ -73,11 +76,11 @@ function NotePage() {
   };
 
   return (
-    <div className="note-page">
-      <header className="note-page__header">
-        <h1>정리노트</h1>
-        <p>지금까지의 수업 내용을 정리했어요.</p>
-      </header>
+    <div className="app-page note-page">
+      <PageHeader
+        title="정리노트"
+        description="지금까지의 수업 내용을 정리했어요."
+      />
 
       <div className="note-page__notebook">
         <div className="note-page__binding" aria-hidden="true">
@@ -130,6 +133,7 @@ function NotePage() {
                     >
                       {keyword.checked && "✓"}
                     </span>
+
                     <span>{keyword.name}</span>
                   </li>
                 ))}

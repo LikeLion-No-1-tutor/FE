@@ -64,10 +64,10 @@ function NicknamePage() {
           </div>
 
           <button
+            type="submit"
             className={`nickname-page__submit ${
               isValid ? "nickname-page__submit--active" : ""
             }`}
-            type="submit"
             disabled={!isValid}
           >
             <span>시작하기</span>

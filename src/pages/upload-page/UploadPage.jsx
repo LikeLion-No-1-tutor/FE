@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import PageHeader from "../../components/common/PageHeader";
 import uploadCloudIcon from "../../assets/icons/upload-cloud.svg";
 import circleIcon from "../../assets/icons/circle.svg";
 import circleDotIcon from "../../assets/icons/circle-dot.svg";
@@ -113,11 +113,11 @@ function UploadPage() {
   };
 
   return (
-    <div className="upload-page">
-      <header className="upload-page__header">
-        <h1>수업 자료 제출</h1>
-        <p>가르치고 싶은 학습 자료를 올려주세요.</p>
-      </header>
+    <div className="app-page upload-page">
+      <PageHeader
+        title="수업 자료 제출"
+        description="가르치고 싶은 학습 자료를 올려주세요."
+      />
 
       <div className="upload-page__content">
         <section className="upload-page__panel">

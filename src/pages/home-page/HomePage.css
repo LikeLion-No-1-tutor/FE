@@ -1,17 +1,18 @@
 .home-page {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  min-height: 100vh;
-  padding: var(--page-padding-y) var(--page-padding-x);
-  background-color: var(--color-background);
+  min-width: 0;
+  background-color: var(--app-page-background, #f6f4f0);
 }
 
 .home-page__header {
-  margin-bottom: 52px;
+  margin-bottom: 40px;
 }
 
 .home-page__header h1 {
   margin: 0 0 8px;
-  color: #202a27;
+  color: var(--color-text);
   font-size: 30px;
   font-weight: 700;
   line-height: 1.35;
@@ -19,9 +20,10 @@
 
 .home-page__header p {
   margin: 0;
-  color: #202a27;
+  color: var(--color-text);
   font-size: 20px;
   font-weight: 700;
+  line-height: 1.4;
 }
 
 .home-page__actions {
@@ -31,20 +33,19 @@
 }
 
 .home-page__action {
-  height: 166px;
-
+  height: 150px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 18px;
 
-  background-color: #ffffff;
-  border: 1px solid #e4ded5;
-  border-radius: 12px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--app-card-radius);
 
-  color: #202a27;
-  font-size: 18px;
+  color: var(--color-text);
+  font-size: 17px;
   font-weight: 700;
 
   transition:
@@ -53,12 +54,12 @@
 }
 
 .home-page__action--primary {
-  background-color: #e8f0e5;
+  background-color: var(--color-primary-light);
 }
 
 .home-page__action img {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
 }
 
@@ -68,7 +69,7 @@
 }
 
 .home-page__recent {
-  margin-top: 66px;
+  margin-top: 48px;
 }
 
 .home-page__recent-header {
@@ -80,7 +81,7 @@
 
 .home-page__recent-header h2 {
   margin: 0;
-  color: #202a27;
+  color: var(--color-text);
   font-size: 22px;
   font-weight: 700;
 }
@@ -89,37 +90,36 @@
   display: flex;
   align-items: center;
   gap: 12px;
-
   padding: 6px 4px;
+
   background: none;
   border: none;
+  color: var(--color-text);
 
-  color: #202a27;
   font-size: 14px;
   font-weight: 700;
 }
 
-.home-page__more span {
+.home-page__more span:last-child {
   font-size: 24px;
   font-weight: 400;
 }
 
 .home-page__recent-list {
   padding: 8px 24px;
-  background-color: #ffffff;
-  border: 1px solid #e4ded5;
-  border-radius: 12px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--app-card-radius);
 }
 
 .home-page__recent-item {
   width: 100%;
-  min-height: 78px;
+  min-height: 68px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-
   padding: 0 12px;
 
   background-color: transparent;
@@ -146,19 +146,19 @@
   width: 20px;
   height: 20px;
   object-fit: contain;
+  flex-shrink: 0;
 }
 
 .home-page__recent-title {
   min-width: 120px;
-  color: #202a27;
+  color: var(--color-text);
   font-size: 16px;
   font-weight: 700;
 }
 
 .home-page__category {
   padding: 7px 14px;
-
-  background-color: #e8f0e5;
+  background-color: var(--color-primary-light);
   border-radius: 16px;
 
   color: #445248;
@@ -170,7 +170,7 @@
 .home-page__recent-right {
   display: flex;
   align-items: center;
-  gap: 58px;
+  gap: 48px;
   flex-shrink: 0;
 }
 
@@ -181,18 +181,14 @@
 }
 
 .home-page__chevron {
-  color: #777b77;
+  color: var(--color-text-secondary);
   font-size: 26px;
   font-weight: 400;
 }
 
 @media (max-width: 1050px) {
-  .home-page {
-    padding: 64px 32px;
-  }
-
   .home-page__action {
-    height: 148px;
+    height: 135px;
     font-size: 15px;
   }
 
@@ -202,12 +198,8 @@
 }
 
 @media (max-width: 760px) {
-  .home-page {
-    padding: 40px 20px;
-  }
-
   .home-page__header {
-    margin-bottom: 36px;
+    margin-bottom: 32px;
   }
 
   .home-page__header h1 {
@@ -224,7 +216,7 @@
   }
 
   .home-page__action {
-    height: 100px;
+    height: 96px;
     flex-direction: row;
     gap: 16px;
   }
@@ -235,7 +227,7 @@
   }
 
   .home-page__recent {
-    margin-top: 44px;
+    margin-top: 36px;
   }
 
   .home-page__recent-list {
@@ -243,7 +235,7 @@
   }
 
   .home-page__recent-item {
-    min-height: 74px;
+    min-height: 68px;
     gap: 8px;
     padding: 0 4px;
   }
@@ -268,5 +260,15 @@
 
   .home-page__recent-date {
     font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-page__action {
+    transition: none;
+  }
+
+  .home-page__action:hover {
+    transform: none;
   }
 }
