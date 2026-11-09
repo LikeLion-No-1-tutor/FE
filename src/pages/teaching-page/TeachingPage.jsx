@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import listCheckIcon from "../../assets/icons/list-check.svg";
 import handIcon from "../../assets/icons/hand.svg";
 import sendIcon from "../../assets/icons/send.svg";
+import chevronRightIcon from "../../assets/icons/chevron-right.svg";
 
 import harinProfile from "../../assets/images/Harin-profile.svg";
 import seoyoonProfile from "../../assets/images/Seoyoon-profile.svg";
@@ -198,7 +199,7 @@ function TeachingPage() {
             onClick={() => navigate(-1)}
             aria-label="뒤로가기"
           >
-            ←
+            <img src={chevronRightIcon} alt="" />
           </button>
 
           <h1 className="teaching-page__title">{topic}</h1>
