@@ -1,8 +1,8 @@
 .home-page {
   width: 100%;
   min-height: 100vh;
-  padding: 56px 48px 64px;
-  background-color: #f6f4f0;
+  padding: var(--page-padding-y) var(--page-padding-x);
+  background-color: var(--color-background);
 }
 
 .home-page__header {

@@ -1,11 +1,18 @@
 .main-layout {
   display: flex;
   min-height: 100vh;
-  background-color: var(--color-background);
+  background-color: #f6f4f0;
 }
 
 .main-layout__content {
   flex: 1;
   min-width: 0;
   min-height: 100vh;
+}
+
+.main-layout__inner {
+  width: 100%;
+  max-width: 1440px;
+  min-height: 100vh;
+  margin: 0 auto;
 }

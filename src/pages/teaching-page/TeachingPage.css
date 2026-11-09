@@ -1,8 +1,8 @@
 .teaching-page {
   width: 100%;
   min-height: 100vh;
-  padding: 48px 48px 40px;
-  background-color: #f6f4f0;
+  padding: var(--page-padding-y) var(--page-padding-x);
+  background-color: var(--color-background);
 }
 
 .teaching-page__topbar {
@@ -24,10 +24,21 @@
 .teaching-page__back-button {
   width: 34px;
   height: 38px;
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   border: none;
   background: transparent;
-  color: #174d3b;
-  font-size: 29px;
+  cursor: pointer;
+}
+
+.teaching-page__back-button img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .teaching-page__title {

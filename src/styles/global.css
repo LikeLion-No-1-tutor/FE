@@ -16,6 +16,14 @@
   --color-danger: #bc6557;
   --color-question: #fff0c7;
   --color-question-border: #e8bc69;
+
+  --page-padding-x: 40px;
+  --page-padding-y: 28px;
+
+  --page-title-size: 26px;
+  --page-section-gap: 24px;
+
+  --page-card-radius: 12px;
 }
 
 * {

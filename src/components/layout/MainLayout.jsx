@@ -9,7 +9,9 @@ function MainLayout() {
       <Sidebar />
 
       <main className="main-layout__content">
-        <Outlet />
+        <div className="main-layout__inner">
+          <Outlet />
+        </div>
       </main>
     </div>
   );
