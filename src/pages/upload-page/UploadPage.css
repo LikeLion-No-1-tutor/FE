@@ -403,3 +403,35 @@
     animation-duration: 2s;
   }
 }
+.upload-page__progress-list {
+  width: 100%;
+  margin-top: 20px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upload-page__progress-item {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding: 10px 14px;
+
+  background-color: var(--color-background);
+  border-radius: 8px;
+
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.upload-page__progress-item strong {
+  flex-shrink: 0;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+}

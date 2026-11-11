@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import PageHeader from "../../components/common/PageHeader";
@@ -11,44 +11,34 @@ import highschoolImage from "../../assets/images/high3-LeeDoYoon.svg";
 import collegeImage from "../../assets/images/college2-ChoiSeoYoon.svg";
 import elementaryImage from "../../assets/images/element5-KimHaRin.svg";
 
-import {
-  getFileTitle,
-  createTeachingSession,
-  saveTeachingSession,
-} from "../../utils/teachingSession";
+import { getPersonas } from "../../api/personaApi";
+import { uploadMaterial, getMaterialStatus } from "../../api/materialApi";
+import { startLesson } from "../../api/lessonApi";
 
 import "./UploadPage.css";
 
-const students = [
-  {
-    id: "elementary",
-    name: "김하린",
-    level: "초등학교 5학년",
-    description: "쉬운 예시와 기초 개념을 좋아해요.",
+const studentProfiles = {
+  haneul: {
     image: elementaryImage,
+    level: "초등학교 5학년",
+    description: "쉬운 말이 필요해요. 어려운 용어가 나오면 뜻부터 물어봐요.",
   },
-  {
-    id: "highschool",
-    name: "이도윤",
-    level: "고등학교 3학년",
-    description: "개념을 차근차근 이해하고 싶어 해요.",
+  minjun: {
     image: highschoolImage,
+    level: "고등학교 1학년",
+    description: '"왜요?"를 파고들고, 이해하면 자기 말로 정리해요.',
   },
-  {
-    id: "college",
-    name: "최서윤",
-    level: "대학교 2학년",
-    description: "개념과 실제 활용 사례를 연결해요.",
+  seoyeon: {
     image: collegeImage,
+    level: "대학교 2학년",
+    description: "반례와 예외로 설명의 빈틈을 확인해요.",
   },
-  {
-    id: "professor",
-    name: "박영호",
-    level: "대학 교수님",
-    description: "깊이 있는 설명과 근거를 중요하게 생각해요.",
+  hyunwoo: {
     image: professorImage,
+    level: "대학 교수님",
+    description: "부드럽게 묻지만, 정의·근거·조건을 끝까지 확인해요.",
   },
-];
+};
 
 const allowedExtensions = [
   "pdf",
@@ -57,37 +47,147 @@ const allowedExtensions = [
   "doc",
   "docx",
   "txt",
+  "md",
   "png",
   "jpg",
   "jpeg",
-  "webp",
+  "js",
+  "jsx",
+  "ts",
+  "tsx",
+  "py",
+  "java",
+  "c",
+  "cpp",
+  "h",
+  "hpp",
+  "cs",
+  "go",
+  "rs",
+  "html",
+  "css",
 ];
 
-async function generateChecklistDemo() {
-  await new Promise((resolve) => setTimeout(resolve, 1500));
+const fileAccept = allowedExtensions
+  .map((extension) => `.${extension}`)
+  .join(",");
 
-  return [
-    {
-      id: "term-1",
-      name: "핵심 개념",
-      concept: "",
-    },
-    {
-      id: "term-2",
-      name: "주요 원리",
-      concept: "",
-    },
-    {
-      id: "term-3",
-      name: "활용 및 예시",
-      concept: "",
-    },
-  ];
+const processingSteps = [
+  { key: "read", label: "학습 자료 읽기" },
+  { key: "terms", label: "용어 체크리스트 생성" },
+  { key: "summary", label: "학습 내용 정리" },
+  { key: "original_deleted", label: "자료 처리 마무리" },
+];
+
+function getFileTitle(fileName) {
+  const lastDot = fileName.lastIndexOf(".");
+
+  if (lastDot <= 0) {
+    return fileName;
+  }
+
+  return fileName.slice(0, lastDot);
+}
+
+function getStudentLabel(student) {
+  const profile = studentProfiles[student.code];
+
+  if (profile?.level) {
+    return profile.level;
+  }
+
+  return student.grade_label || "";
+}
+
+function getStudentDescription(student) {
+  return (
+    studentProfiles[student.code]?.description || student.description || ""
+  );
+}
+
+function getErrorMessage(error) {
+  switch (error.code) {
+    case "VALIDATION_ERROR":
+      return "수업 제목과 학습 자료를 확인해 주세요.";
+
+    case "UNSUPPORTED_FILE_TYPE":
+      return "지원하지 않는 파일 형식이에요. 다른 파일을 선택해 주세요.";
+
+    case "FILE_TOO_LARGE":
+      return "파일이 너무 커요. 크기를 줄여 다시 올려 주세요.";
+
+    case "UNREADABLE_MATERIAL":
+      return "자료에서 내용을 읽을 수 없어요. 다른 파일을 올려 주세요.";
+
+    case "AI_ERROR":
+      return "자료를 정리하지 못했어요. 다시 시도해 주세요.";
+
+    case "MATERIAL_NOT_READY":
+      return "자료 정리가 아직 끝나지 않았어요. 다시 확인해 주세요.";
+
+    case "MATERIAL_ALREADY_USED":
+      return "이미 수업에 사용한 자료예요. 새 자료를 올려 주세요.";
+
+    case "PROCESSING_TIMEOUT":
+      return "자료 정리가 계속 진행 중이에요. 잠시 후 다시 확인해 주세요.";
+
+    case "INVALID_PERSONA_RESPONSE":
+      return "학생 목록을 불러오지 못했어요.";
+
+    default:
+      return "잠시 문제가 생겼어요. 다시 시도해 주세요.";
+  }
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForMaterialReady(materialId, onProgress, isActive) {
+  for (let attempt = 0; attempt < 120; attempt += 1) {
+    if (!isActive()) return null;
+
+    const material = await getMaterialStatus(materialId);
+
+    if (!isActive()) return null;
+
+    onProgress(material);
+
+    if (material.status === "ready") {
+      return material;
+    }
+
+    if (material.status === "failed") {
+      const error = new Error("자료 정리에 실패했습니다.");
+
+      error.code = material.error?.code || "AI_ERROR";
+      error.requestId = material.error?.request_id;
+
+      throw error;
+    }
+
+    if (material.status !== "processing") {
+      throw new Error("UNKNOWN_MATERIAL_STATUS");
+    }
+
+    await sleep(2000);
+  }
+
+  const error = new Error("자료 정리가 아직 완료되지 않았습니다.");
+  error.code = "PROCESSING_TIMEOUT";
+
+  throw error;
 }
 
 function UploadPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const mountedRef = useRef(true);
+  const submittingRef = useRef(false);
+
+  const [personas, setPersonas] = useState([]);
+  const [isLoadingPersonas, setIsLoadingPersonas] = useState(true);
+  const [personaError, setPersonaError] = useState("");
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -95,15 +195,75 @@ function UploadPage() {
   const [fileError, setFileError] = useState("");
 
   const [customTitle, setCustomTitle] = useState("");
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState("");
+  const [processingStatus, setProcessingStatus] = useState("");
+  const [processingStepsState, setProcessingStepsState] = useState(null);
+
+  const [pendingMaterialId, setPendingMaterialId] = useState(null);
 
   const defaultTitle = selectedFile ? getFileTitle(selectedFile.name) : "";
 
   const finalTitle = customTitle.trim() || defaultTitle;
 
+  const isTitleValid = finalTitle.length >= 1 && finalTitle.length <= 100;
+
   const canStart =
-    selectedFile !== null && selectedStudent !== null && !isGenerating;
+    selectedFile !== null &&
+    selectedStudent !== null &&
+    isTitleValid &&
+    !isGenerating &&
+    !isLoadingPersonas;
+
+  useEffect(() => {
+    mountedRef.current = true;
+    let cancelled = false;
+
+    const fetchPersonas = async () => {
+      setIsLoadingPersonas(true);
+      setPersonaError("");
+
+      try {
+        const data = await getPersonas();
+
+        if (cancelled) return;
+
+        setPersonas(data);
+      } catch (error) {
+        if (cancelled) return;
+
+        console.error("학생 목록 조회 실패:", {
+          code: error.code,
+          status: error.status,
+          requestId: error.requestId,
+        });
+
+        if (error.code === "NICKNAME_REQUIRED") {
+          navigate("/nickname", { replace: true });
+          return;
+        }
+
+        if (error.code === "UNAUTHORIZED") {
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        setPersonaError(getErrorMessage(error));
+      } finally {
+        if (!cancelled) {
+          setIsLoadingPersonas(false);
+        }
+      }
+    };
+
+    fetchPersonas();
+
+    return () => {
+      cancelled = true;
+      mountedRef.current = false;
+    };
+  }, [navigate]);
 
   const handleFile = (file) => {
     if (!file || isGenerating) return;
@@ -111,7 +271,7 @@ function UploadPage() {
     const extension = file.name.split(".").pop()?.toLowerCase();
 
     if (!allowedExtensions.includes(extension)) {
-      setFileError("지원하지 않는 파일 형식입니다.");
+      setFileError("지원하지 않는 파일 형식이에요.");
       setSelectedFile(null);
       return;
     }
@@ -120,6 +280,9 @@ function UploadPage() {
     setCustomTitle("");
     setFileError("");
     setGenerateError("");
+    setPendingMaterialId(null);
+    setProcessingStatus("");
+    setProcessingStepsState(null);
   };
 
   const handleFileChange = (event) => {
@@ -136,55 +299,148 @@ function UploadPage() {
     handleFile(event.dataTransfer.files?.[0]);
   };
 
-  const handleStart = async () => {
-    if (!canStart) return;
+  const handleApiError = (error) => {
+    console.error("수업 준비 실패:", {
+      code: error.code,
+      status: error.status,
+      requestId: error.requestId,
+    });
 
-    const student = students.find((item) => item.id === selectedStudent);
+    if (error.code === "NICKNAME_REQUIRED") {
+      navigate("/nickname", { replace: true });
+      return;
+    }
+
+    if (error.code === "UNAUTHORIZED") {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    if (error.code === "FORBIDDEN" || error.code === "NOT_FOUND") {
+      setGenerateError("자료를 찾을 수 없어요.");
+      return;
+    }
+
+    setGenerateError(getErrorMessage(error));
+  };
+
+  const handleStart = async () => {
+    if (!canStart || submittingRef.current) return;
+
+    const student = personas.find((item) => item.id === selectedStudent);
 
     if (!student) return;
 
+    submittingRef.current = true;
     setIsGenerating(true);
     setGenerateError("");
+    setProcessingStatus("uploading");
+    setProcessingStepsState(null);
 
     try {
-      const terms = await generateChecklistDemo();
+      let materialId = pendingMaterialId;
 
-      const session = createTeachingSession({
-        title: finalTitle,
-        fileName: selectedFile.name,
-        studentId: student.id,
-        terms,
+      if (materialId == null) {
+        const material = await uploadMaterial({
+          title: finalTitle,
+          file: selectedFile,
+        });
+
+        if (!mountedRef.current) return;
+
+        materialId = material.id;
+        setPendingMaterialId(materialId);
+      }
+
+      setProcessingStatus("processing");
+
+      const readyMaterial = await waitForMaterialReady(
+        materialId,
+        (material) => {
+          if (!mountedRef.current) return;
+
+          setProcessingStepsState(material.steps);
+        },
+        () => mountedRef.current,
+      );
+
+      if (!mountedRef.current || !readyMaterial) return;
+
+      setProcessingStatus("starting");
+
+      const lesson = await startLesson({
+        materialId,
+        personaId: student.id,
       });
 
-      saveTeachingSession(session);
+      if (!mountedRef.current) return;
 
-      sessionStorage.setItem("teachingStudent", student.name);
+      sessionStorage.setItem("lesson_id", String(lesson.id));
 
-      sessionStorage.setItem("teachingStudentId", student.id);
+      sessionStorage.setItem(
+        "teachingStudent",
+        lesson.persona?.name || student.name,
+      );
+
+      sessionStorage.setItem("teachingStudentId", student.code);
 
       sessionStorage.setItem("teachingFileName", selectedFile.name);
 
-      sessionStorage.setItem("teachingTitle", finalTitle);
+      sessionStorage.setItem(
+        "teachingTitle",
+        lesson.material?.title || finalTitle,
+      );
 
       navigate("/teaching", {
         state: {
-          topic: finalTitle,
-          title: finalTitle,
-          studentId: student.id,
-          studentName: student.name,
-          studentLevel: student.level,
+          lessonId: lesson.id,
+          lesson,
+          topic: lesson.material?.title || finalTitle,
+          title: lesson.material?.title || finalTitle,
+          studentId: student.code,
+          personaId: student.id,
+          studentName: lesson.persona?.name || student.name,
+          studentLevel: getStudentLabel(student),
           fileName: selectedFile.name,
-          terms,
-          sessionId: session.id,
+          terms: lesson.terms || [],
+          messages: lesson.messages || [],
         },
       });
     } catch (error) {
-      console.error("체크리스트 준비 실패:", error);
+      if (!mountedRef.current) return;
 
-      setGenerateError("수업을 준비하지 못했습니다. 다시 시도해 주세요.");
+      handleApiError(error);
     } finally {
-      setIsGenerating(false);
+      submittingRef.current = false;
+
+      if (mountedRef.current) {
+        setIsGenerating(false);
+        setProcessingStatus("");
+      }
     }
+  };
+
+  const getStepText = (status) => {
+    switch (status) {
+      case "done":
+        return "완료";
+      case "running":
+        return "진행 중";
+      default:
+        return "대기 중";
+    }
+  };
+
+  const getLoadingTitle = () => {
+    if (processingStatus === "uploading") {
+      return "학습 자료를 업로드하고 있어요";
+    }
+
+    if (processingStatus === "starting") {
+      return "수업을 시작하고 있어요";
+    }
+
+    return "수업을 준비하고 있어요";
   };
 
   return (
@@ -218,7 +474,7 @@ function UploadPage() {
             ref={fileInputRef}
             type="file"
             className="upload-page__file-input"
-            accept=".pdf,.ppt,.pptx,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp"
+            accept={fileAccept}
             onChange={handleFileChange}
             disabled={isGenerating}
             aria-label="학습 자료 파일 선택"
@@ -273,7 +529,7 @@ function UploadPage() {
                 <p className="upload-page__upload-title">파일을 올려주세요</p>
 
                 <span className="upload-page__file-description">
-                  PDF, PPT, DOCX, TXT, 이미지
+                  PDF, PPT, DOCX, TXT, MD, 이미지, 소스코드
                 </span>
               </>
             )}
@@ -293,44 +549,58 @@ function UploadPage() {
             가르칠 학생을 선택해 주세요.
           </p>
 
-          <div className="upload-page__student-list">
-            {students.map((student) => {
-              const isSelected = selectedStudent === student.id;
+          {isLoadingPersonas ? (
+            <p className="upload-page__panel-description">
+              학생 목록을 불러오는 중...
+            </p>
+          ) : personaError ? (
+            <p className="upload-page__error" role="alert">
+              {personaError}
+            </p>
+          ) : (
+            <div className="upload-page__student-list">
+              {personas.map((student) => {
+                const isSelected = selectedStudent === student.id;
 
-              return (
-                <button
-                  key={student.id}
-                  type="button"
-                  className={`upload-page__student ${
-                    isSelected ? "upload-page__student--selected" : ""
-                  }`}
-                  onClick={() => setSelectedStudent(student.id)}
-                  aria-pressed={isSelected}
-                  disabled={isGenerating}
-                >
-                  <img
-                    src={student.image}
-                    alt=""
-                    className="upload-page__student-image"
-                  />
+                const profile = studentProfiles[student.code];
 
-                  <div className="upload-page__student-info">
-                    <strong>
-                      {student.name} · {student.level}
-                    </strong>
+                return (
+                  <button
+                    key={student.id}
+                    type="button"
+                    className={`upload-page__student ${
+                      isSelected ? "upload-page__student--selected" : ""
+                    }`}
+                    onClick={() => setSelectedStudent(student.id)}
+                    aria-pressed={isSelected}
+                    disabled={isGenerating}
+                  >
+                    {profile?.image && (
+                      <img
+                        src={profile.image}
+                        alt=""
+                        className="upload-page__student-image"
+                      />
+                    )}
 
-                    <span>{student.description}</span>
-                  </div>
+                    <div className="upload-page__student-info">
+                      <strong>
+                        {student.name} · {getStudentLabel(student)}
+                      </strong>
 
-                  <img
-                    src={isSelected ? circleDotIcon : circleIcon}
-                    alt=""
-                    className="upload-page__radio-icon"
-                  />
-                </button>
-              );
-            })}
-          </div>
+                      <span>{getStudentDescription(student)}</span>
+                    </div>
+
+                    <img
+                      src={isSelected ? circleDotIcon : circleIcon}
+                      alt=""
+                      className="upload-page__radio-icon"
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </section>
       </div>
 
@@ -361,15 +631,32 @@ function UploadPage() {
           <div className="upload-page__loading-card">
             <div className="upload-page__spinner" aria-hidden="true" />
 
-            <h2>수업을 준비하고 있어요</h2>
+            <h2>{getLoadingTitle()}</h2>
 
-            <p>학습 자료의 핵심 용어를 정리하고 있어요.</p>
+            <p>학습 자료를 분석하고 수업을 준비하고 있어요.</p>
 
-            <strong>체크리스트 준비 중...</strong>
+            {processingStatus === "processing" && (
+              <div className="upload-page__progress-list">
+                {processingSteps.map((step) => {
+                  const status = processingStepsState?.[step.key] || "pending";
 
-            <span className="upload-page__loading-demo">
-              현재는 데모 체크리스트를 사용합니다.
-            </span>
+                  return (
+                    <div key={step.key} className="upload-page__progress-item">
+                      <span>{step.label}</span>
+                      <strong>{getStepText(status)}</strong>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {processingStatus === "uploading" && (
+              <strong>자료 업로드 중...</strong>
+            )}
+
+            {processingStatus === "starting" && (
+              <strong>AI 학생을 불러오는 중...</strong>
+            )}
           </div>
         </div>
       )}
