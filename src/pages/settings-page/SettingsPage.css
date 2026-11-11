@@ -309,3 +309,27 @@
     padding: 0 12px;
   }
 }
+.settings-page__delete-button {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.settings-page__delete-button:hover {
+  background-color: #fff2ef;
+}
+
+.settings-page__modal-delete {
+  background-color: var(--color-danger);
+}
+
+.settings-page__modal-delete:hover {
+  background-color: #a85246;
+}
+
+.settings-page__error {
+  margin: 12px 0 0;
+  color: var(--color-danger);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}

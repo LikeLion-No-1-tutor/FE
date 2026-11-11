@@ -154,3 +154,9 @@
     font-size: 13px;
   }
 }
+.nickname-page__error {
+  margin: 8px 0 0;
+  color: var(--color-danger);
+  font-size: 12px;
+  line-height: 1.5;
+}

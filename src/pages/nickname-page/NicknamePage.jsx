@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { updateMyInfo } from "../../api/userApi";
 import BrandLogo from "../../components/common/BrandLogo";
 import profileIcon from "../../assets/icons/profile.svg";
 
@@ -8,18 +8,49 @@ import "./NicknamePage.css";
 
 function NicknamePage() {
   const navigate = useNavigate();
+
   const [nickname, setNickname] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const trimmedNickname = nickname.trim();
-  const isValid = trimmedNickname.length >= 2 && trimmedNickname.length <= 10;
+  const isValid = trimmedNickname.length >= 1 && trimmedNickname.length <= 10;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!isValid) return;
+    if (!isValid || isLoading) return;
 
-    sessionStorage.setItem("nickname", trimmedNickname);
-    navigate("/home");
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const user = await updateMyInfo({
+        nickname: trimmedNickname,
+        onboarding_completed: true,
+      });
+
+      sessionStorage.setItem("user", JSON.stringify(user));
+      sessionStorage.setItem("nickname", user.nickname);
+
+      navigate("/home", { replace: true });
+    } catch (error) {
+      console.error("닉네임 저장 실패:", {
+        code: error.code,
+        status: error.status,
+        requestId: error.requestId,
+      });
+
+      if (error.code === "VALIDATION_ERROR") {
+        setErrorMessage("닉네임은 1~10자로 입력해 주세요.");
+      } else if (error.code === "UNAUTHORIZED") {
+        setErrorMessage("로그인이 필요해요. 다시 로그인해 주세요.");
+      } else {
+        setErrorMessage("잠시 문제가 생겼어요. 다시 시도해 주세요.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -53,25 +84,37 @@ function NicknamePage() {
               type="text"
               value={nickname}
               placeholder="닉네임을 입력해 주세요"
-              onChange={(e) => setNickname(e.target.value)}
+              onChange={(e) => {
+                setNickname(e.target.value);
+                setErrorMessage("");
+              }}
+              maxLength={10}
               autoComplete="off"
               aria-describedby="nickname-help"
+              aria-invalid={Boolean(errorMessage)}
+              disabled={isLoading}
             />
 
             <p id="nickname-help" className="nickname-page__helper">
-              2~10자로 입력해 주세요.
+              1~10자로 입력해 주세요.
             </p>
+
+            {errorMessage && (
+              <p className="nickname-page__error" role="alert">
+                {errorMessage}
+              </p>
+            )}
           </div>
 
           <button
             type="submit"
             className={`nickname-page__submit ${
-              isValid ? "nickname-page__submit--active" : ""
+              isValid && !isLoading ? "nickname-page__submit--active" : ""
             }`}
-            disabled={!isValid}
+            disabled={!isValid || isLoading}
           >
-            <span>시작하기</span>
-            <span aria-hidden="true">→</span>
+            <span>{isLoading ? "저장 중..." : "시작하기"}</span>
+            {!isLoading && <span aria-hidden="true">→</span>}
           </button>
         </form>
       </main>

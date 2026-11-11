@@ -272,3 +272,14 @@
     transform: none;
   }
 }
+.home-page__status {
+  margin-top: 12px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.home-page__error {
+  margin-top: 12px;
+  color: var(--color-danger);
+  font-size: 13px;
+}
