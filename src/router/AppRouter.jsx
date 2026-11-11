@@ -57,6 +57,10 @@ export const AppRouter = createBrowserRouter([
         element: <NotePage />,
       },
       {
+        path: "/lessons/:lessonId/note",
+        element: <NotePage />,
+      },
+      {
         path: "/assessment",
         element: <AssessmentPage />,
       },

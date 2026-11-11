@@ -397,7 +397,7 @@ function TeachingPage() {
 
       sessionStorage.setItem("lesson_id", String(result.id));
 
-      navigate("/assessment", {
+      navigate(`/lessons/${result.id}/note`, {
         replace: true,
         state: {
           lessonId: result.id,
@@ -412,11 +412,10 @@ function TeachingPage() {
       });
 
       if (error.code === "LESSON_NOT_TEACHING") {
-        navigate("/assessment", {
+        navigate(`/lessons/${lessonId}/note`, {
           replace: true,
           state: {
             lessonId,
-            lessonStatus: "evaluating",
           },
         });
         return;
