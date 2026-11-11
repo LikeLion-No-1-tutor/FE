@@ -4,9 +4,11 @@
   background-color: var(--app-page-background, #f6f4f0);
 }
 
+/* 전체 레이아웃 */
+
 .upload-page__content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
 }
 
@@ -14,47 +16,95 @@
   min-width: 0;
   min-height: 480px;
   padding: 30px;
-
   background-color: #ffffff;
-  border: 1px solid #e4ded5;
+  border: 1px solid var(--color-border, #e4ded5);
   border-radius: 12px;
 }
 
 .upload-page__panel h2 {
   margin: 0;
-  color: #202a27;
+  color: var(--color-text, #202a27);
   font-size: 22px;
   font-weight: 700;
 }
 
 .upload-page__panel-description {
   margin: 12px 0 0;
-  color: #777b77;
+  color: var(--color-text-secondary, #777b77);
   font-size: 14px;
 }
+
+/* 수업 제목 */
+
+.upload-page__title-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 0;
+}
+
+.upload-page__panel:first-child h2 {
+  margin-top: 28px;
+}
+
+.upload-page__title-field label {
+  color: var(--color-text, #202a27);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.upload-page__title-field input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  background-color: #ffffff;
+  border: 1px solid var(--color-border, #e4ded5);
+  border-radius: 8px;
+  outline: none;
+  color: var(--color-text, #202a27);
+  font-size: 14px;
+}
+
+.upload-page__title-field input:focus {
+  border-color: var(--color-primary, #174d3b);
+}
+
+.upload-page__title-field input:disabled {
+  background-color: #f6f4f0;
+  cursor: not-allowed;
+}
+
+.upload-page__title-field p {
+  margin: 0;
+  color: #999b98;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* 파일 업로드 */
 
 .upload-page__file-input {
   display: none;
 }
 
 .upload-page__dropzone {
-  width: 100%;
-  min-height: 360px;
-  margin-top: 30px;
-  padding: 32px;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
 
+  width: 100%;
+  min-height: 270px;
+  margin-top: 24px;
+  padding: 28px;
+
   background-color: #fefcf8;
   border: 2px dashed #d8ded8;
   border-radius: 10px;
-
   text-align: center;
   cursor: pointer;
+
   transition:
     background-color 0.2s,
     border-color 0.2s;
@@ -62,8 +112,13 @@
 
 .upload-page__dropzone:hover,
 .upload-page__dropzone--dragging {
-  background-color: #e8f0e5;
-  border-color: #174d3b;
+  background-color: var(--color-primary-light, #e8f0e5);
+  border-color: var(--color-primary, #174d3b);
+}
+
+.upload-page__dropzone--disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .upload-page__dropzone:focus-visible {
@@ -77,33 +132,41 @@
   object-fit: contain;
 }
 
-.upload-page__upload-title {
+.upload-page__upload-title,
+.upload-page__file-name {
+  max-width: 100%;
   margin: 14px 0 0;
-  color: #202a27;
-  font-size: 18px;
   font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.upload-page__upload-title {
+  color: var(--color-text, #202a27);
+  font-size: 18px;
+}
+
+.upload-page__file-name {
+  color: var(--color-primary, #174d3b);
+  font-size: 16px;
 }
 
 .upload-page__file-description {
-  color: #777b77;
+  color: var(--color-text-secondary, #777b77);
   font-size: 13px;
   line-height: 1.5;
 }
 
-.upload-page__file-name {
-  max-width: 100%;
-  margin: 14px 0 0;
-  overflow-wrap: anywhere;
-  color: #174d3b;
-  font-size: 16px;
-  font-weight: 700;
-}
-
 .upload-page__error {
   margin: 12px 0 0;
-  color: #bc6557;
+  color: var(--color-danger, #bc6557);
   font-size: 13px;
 }
+
+.upload-page__generate-error {
+  margin-top: 16px;
+}
+
+/* 학생 AI 선택 */
 
 .upload-page__student-list {
   display: flex;
@@ -113,55 +176,57 @@
 }
 
 .upload-page__student {
-  width: 100%;
-  min-height: 80px;
-  padding: 12px 16px;
-
   display: flex;
   align-items: center;
   gap: 16px;
 
-  background-color: #ffffff;
-  border: 1px solid #e4ded5;
-  border-radius: 9px;
+  width: 100%;
+  min-height: 80px;
+  padding: 12px 16px;
 
+  background-color: #ffffff;
+  border: 1px solid var(--color-border, #e4ded5);
+  border-radius: 9px;
   text-align: left;
   cursor: pointer;
 }
 
-.upload-page__student:hover {
+.upload-page__student:hover:not(:disabled) {
   border-color: #8fac9c;
 }
 
 .upload-page__student--selected {
-  background-color: #e8f0e5;
-  border: 2px solid #174d3b;
+  background-color: var(--color-primary-light, #e8f0e5);
+  border: 2px solid var(--color-primary, #174d3b);
+}
+
+.upload-page__student:disabled {
+  cursor: not-allowed;
 }
 
 .upload-page__student-image {
   width: 60px;
   height: 60px;
-  object-fit: contain;
   flex-shrink: 0;
+  object-fit: contain;
 }
 
 .upload-page__student-info {
-  flex: 1;
-  min-width: 0;
-
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
 .upload-page__student-info strong {
-  color: #202a27;
+  color: var(--color-text, #202a27);
   font-size: 15px;
   font-weight: 700;
 }
 
 .upload-page__student-info span {
-  color: #777b77;
+  color: var(--color-text-secondary, #777b77);
   font-size: 12px;
   line-height: 1.4;
 }
@@ -169,16 +234,18 @@
 .upload-page__radio-icon {
   width: 24px;
   height: 24px;
-  object-fit: contain;
   flex-shrink: 0;
+  object-fit: contain;
 }
+
+/* 수업 시작 버튼 */
 
 .upload-page__start-button {
   width: 100%;
   height: 64px;
   margin-top: 24px;
 
-  background-color: #174d3b;
+  background-color: var(--color-primary, #174d3b);
   border: none;
   border-radius: 8px;
 
@@ -193,11 +260,85 @@
 }
 
 .upload-page__start-button:not(:disabled):hover {
-  background-color: #123d2f;
+  background-color: var(--color-primary-hover, #123d2f);
 }
 
-@media (max-width: 1100px) {
+/* 체크리스트 생성 로딩 */
 
+.upload-page__loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+
+  background-color: rgba(32, 42, 39, 0.35);
+}
+
+.upload-page__loading-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+
+  width: 100%;
+  max-width: 390px;
+  padding: 46px 30px;
+
+  background-color: #fefcf8;
+  border: 1px solid var(--color-border, #e4ded5);
+  border-radius: 14px;
+
+  text-align: center;
+  box-shadow: 0 12px 36px rgba(32, 42, 39, 0.14);
+}
+
+.upload-page__spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid var(--color-primary-light, #e8f0e5);
+  border-top-color: var(--color-primary, #174d3b);
+  border-radius: 50%;
+  animation: upload-page-spin 0.8s linear infinite;
+}
+
+.upload-page__loading-card h2 {
+  margin: 8px 0 0;
+  color: var(--color-text, #202a27);
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.upload-page__loading-card p {
+  margin: 0;
+  color: var(--color-text-secondary, #777b77);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.upload-page__loading-card strong {
+  color: var(--color-primary, #174d3b);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.upload-page__loading-demo {
+  color: #999b98;
+  font-size: 11px;
+}
+
+@keyframes upload-page-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 반응형 */
+
+@media (max-width: 1100px) {
   .upload-page__content {
     gap: 16px;
   }
@@ -235,9 +376,13 @@
 }
 
 @media (max-width: 480px) {
-
-  .upload-page__panel h2 {
+  .upload-page__panel h2,
+  .upload-page__loading-card h2 {
     font-size: 19px;
+  }
+
+  .upload-page__dropzone {
+    padding: 20px;
   }
 
   .upload-page__student-info strong {
@@ -246,5 +391,15 @@
 
   .upload-page__student-info span {
     font-size: 11px;
+  }
+
+  .upload-page__loading-card {
+    padding: 36px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .upload-page__spinner {
+    animation-duration: 2s;
   }
 }

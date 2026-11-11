@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import PageHeader from "../../components/common/PageHeader";
 import uploadCloudIcon from "../../assets/icons/upload-cloud.svg";
 import circleIcon from "../../assets/icons/circle.svg";
@@ -9,6 +10,12 @@ import professorImage from "../../assets/images/professor-ParkYongHo.svg";
 import highschoolImage from "../../assets/images/high3-LeeDoYoon.svg";
 import collegeImage from "../../assets/images/college2-ChoiSeoYoon.svg";
 import elementaryImage from "../../assets/images/element5-KimHaRin.svg";
+
+import {
+  getFileTitle,
+  createTeachingSession,
+  saveTeachingSession,
+} from "../../utils/teachingSession";
 
 import "./UploadPage.css";
 
@@ -56,6 +63,28 @@ const allowedExtensions = [
   "webp",
 ];
 
+async function generateChecklistDemo() {
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+
+  return [
+    {
+      id: "term-1",
+      name: "핵심 개념",
+      concept: "",
+    },
+    {
+      id: "term-2",
+      name: "주요 원리",
+      concept: "",
+    },
+    {
+      id: "term-3",
+      name: "활용 및 예시",
+      concept: "",
+    },
+  ];
+}
+
 function UploadPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -65,10 +94,19 @@ function UploadPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [fileError, setFileError] = useState("");
 
-  const canStart = selectedFile !== null && selectedStudent !== null;
+  const [customTitle, setCustomTitle] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState("");
+
+  const defaultTitle = selectedFile ? getFileTitle(selectedFile.name) : "";
+
+  const finalTitle = customTitle.trim() || defaultTitle;
+
+  const canStart =
+    selectedFile !== null && selectedStudent !== null && !isGenerating;
 
   const handleFile = (file) => {
-    if (!file) return;
+    if (!file || isGenerating) return;
 
     const extension = file.name.split(".").pop()?.toLowerCase();
 
@@ -79,7 +117,9 @@ function UploadPage() {
     }
 
     setSelectedFile(file);
+    setCustomTitle("");
     setFileError("");
+    setGenerateError("");
   };
 
   const handleFileChange = (event) => {
@@ -90,26 +130,61 @@ function UploadPage() {
   const handleDrop = (event) => {
     event.preventDefault();
     setIsDragging(false);
+
+    if (isGenerating) return;
+
     handleFile(event.dataTransfer.files?.[0]);
   };
 
-  const handleStart = () => {
+  const handleStart = async () => {
     if (!canStart) return;
 
     const student = students.find((item) => item.id === selectedStudent);
 
-    sessionStorage.setItem("teachingStudent", student.name);
-    sessionStorage.setItem("teachingStudentId", student.id);
-    sessionStorage.setItem("teachingFileName", selectedFile.name);
+    if (!student) return;
 
-    navigate("/teaching", {
-      state: {
-        studentId: student.id,
-        studentName: student.name,
-        studentLevel: student.level,
+    setIsGenerating(true);
+    setGenerateError("");
+
+    try {
+      const terms = await generateChecklistDemo();
+
+      const session = createTeachingSession({
+        title: finalTitle,
         fileName: selectedFile.name,
-      },
-    });
+        studentId: student.id,
+        terms,
+      });
+
+      saveTeachingSession(session);
+
+      sessionStorage.setItem("teachingStudent", student.name);
+
+      sessionStorage.setItem("teachingStudentId", student.id);
+
+      sessionStorage.setItem("teachingFileName", selectedFile.name);
+
+      sessionStorage.setItem("teachingTitle", finalTitle);
+
+      navigate("/teaching", {
+        state: {
+          topic: finalTitle,
+          title: finalTitle,
+          studentId: student.id,
+          studentName: student.name,
+          studentLevel: student.level,
+          fileName: selectedFile.name,
+          terms,
+          sessionId: session.id,
+        },
+      });
+    } catch (error) {
+      console.error("체크리스트 준비 실패:", error);
+
+      setGenerateError("수업을 준비하지 못했습니다. 다시 시도해 주세요.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -121,6 +196,22 @@ function UploadPage() {
 
       <div className="upload-page__content">
         <section className="upload-page__panel">
+          <div className="upload-page__title-field">
+            <label htmlFor="class-title">수업 제목</label>
+
+            <input
+              id="class-title"
+              type="text"
+              value={customTitle}
+              onChange={(event) => setCustomTitle(event.target.value)}
+              placeholder={defaultTitle || "수업 제목을 입력해 주세요"}
+              disabled={isGenerating}
+              maxLength={100}
+            />
+
+            <p>제목을 입력하지 않으면 파일명이 사용됩니다.</p>
+          </div>
+
           <h2>학습 자료 업로드</h2>
 
           <input
@@ -129,17 +220,25 @@ function UploadPage() {
             className="upload-page__file-input"
             accept=".pdf,.ppt,.pptx,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp"
             onChange={handleFileChange}
+            disabled={isGenerating}
             aria-label="학습 자료 파일 선택"
           />
 
           <div
             className={`upload-page__dropzone ${
               isDragging ? "upload-page__dropzone--dragging" : ""
-            }`}
+            } ${isGenerating ? "upload-page__dropzone--disabled" : ""}`}
             role="button"
-            tabIndex={0}
-            onClick={() => fileInputRef.current?.click()}
+            tabIndex={isGenerating ? -1 : 0}
+            aria-disabled={isGenerating}
+            onClick={() => {
+              if (!isGenerating) {
+                fileInputRef.current?.click();
+              }
+            }}
             onKeyDown={(event) => {
+              if (isGenerating) return;
+
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
                 fileInputRef.current?.click();
@@ -147,7 +246,10 @@ function UploadPage() {
             }}
             onDragOver={(event) => {
               event.preventDefault();
-              setIsDragging(true);
+
+              if (!isGenerating) {
+                setIsDragging(true);
+              }
             }}
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
@@ -161,6 +263,7 @@ function UploadPage() {
             {selectedFile ? (
               <>
                 <p className="upload-page__file-name">{selectedFile.name}</p>
+
                 <span className="upload-page__file-description">
                   다른 파일을 선택하려면 클릭해 주세요.
                 </span>
@@ -168,6 +271,7 @@ function UploadPage() {
             ) : (
               <>
                 <p className="upload-page__upload-title">파일을 올려주세요</p>
+
                 <span className="upload-page__file-description">
                   PDF, PPT, DOCX, TXT, 이미지
                 </span>
@@ -184,6 +288,7 @@ function UploadPage() {
 
         <section className="upload-page__panel">
           <h2>학생 AI 선택</h2>
+
           <p className="upload-page__panel-description">
             가르칠 학생을 선택해 주세요.
           </p>
@@ -201,6 +306,7 @@ function UploadPage() {
                   }`}
                   onClick={() => setSelectedStudent(student.id)}
                   aria-pressed={isSelected}
+                  disabled={isGenerating}
                 >
                   <img
                     src={student.image}
@@ -212,6 +318,7 @@ function UploadPage() {
                     <strong>
                       {student.name} · {student.level}
                     </strong>
+
                     <span>{student.description}</span>
                   </div>
 
@@ -227,14 +334,45 @@ function UploadPage() {
         </section>
       </div>
 
+      {generateError && (
+        <p
+          className="upload-page__error upload-page__generate-error"
+          role="alert"
+        >
+          {generateError}
+        </p>
+      )}
+
       <button
         type="button"
         className="upload-page__start-button"
         onClick={handleStart}
         disabled={!canStart}
       >
-        수업 시작하기
+        {isGenerating ? "수업 준비 중..." : "수업 시작하기"}
       </button>
+
+      {isGenerating && (
+        <div
+          className="upload-page__loading-overlay"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="upload-page__loading-card">
+            <div className="upload-page__spinner" aria-hidden="true" />
+
+            <h2>수업을 준비하고 있어요</h2>
+
+            <p>학습 자료의 핵심 용어를 정리하고 있어요.</p>
+
+            <strong>체크리스트 준비 중...</strong>
+
+            <span className="upload-page__loading-demo">
+              현재는 데모 체크리스트를 사용합니다.
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
