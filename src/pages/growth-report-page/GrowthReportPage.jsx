@@ -1,4 +1,7 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
+import { getReport } from "../../api/reportApi";
 
 import PageHeader from "../../components/common/PageHeader";
 
@@ -10,80 +13,166 @@ import pencilIcon from "../../assets/icons/pencil-white.svg";
 
 import "./GrowthReportPage.css";
 
-const studentMap = {
-  elementary: {
-    name: "김하린",
-    level: "초등학교 5학년",
-  },
-  highschool: {
-    name: "이도윤",
-    level: "고등학교 3학년",
-  },
-  college: {
-    name: "최서윤",
-    level: "대학교 2학년",
-  },
-  professor: {
-    name: "박영호",
-    level: "대학 교수님",
-  },
-};
-
-const demoReport = {
-  topic: "스택과 큐",
-  totalQuestions: 5,
-  correctAnswers: 4,
-  previousCorrectAnswers: 3,
-  goodPoint: "스택의 개념과 동작 방식을 쉬운 예시로 잘 설명했어요.",
-  missedPoint: "큐의 활용 예시가 다소 부족했어요.",
-  reviewRecommendation: "큐의 실생활 예시와 FIFO 개념을 다시 설명해 보세요.",
-};
-
 function GrowthReportPage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { reportId } = useParams();
 
-  const studentId =
-    location.state?.studentId ||
-    sessionStorage.getItem("teachingStudentId") ||
-    "elementary";
+  const [report, setReport] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
 
-  const student = studentMap[studentId] || studentMap.elementary;
+  useEffect(() => {
+    if (!reportId) return;
 
-  const report = {
-    ...demoReport,
-    topic: location.state?.topic || demoReport.topic,
+    let isActive = true;
+
+    const fetchReport = async () => {
+      try {
+        const result = await getReport(reportId);
+
+        if (!isActive) return;
+
+        setReport(result);
+        setErrorMessage("");
+      } catch (error) {
+        if (!isActive) return;
+
+        console.error("성장보고서 상세 조회 실패:", {
+          code: error.code,
+          status: error.status,
+          requestId: error.requestId,
+        });
+
+        if (error.code === "UNAUTHORIZED") {
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        if (error.code === "NICKNAME_REQUIRED") {
+          navigate("/nickname", { replace: true });
+          return;
+        }
+
+        if (error.code === "NOT_FOUND" || error.code === "FORBIDDEN") {
+          navigate("/home", {
+            replace: true,
+            state: {
+              errorMessage: "성장보고서를 찾을 수 없어요.",
+            },
+          });
+          return;
+        }
+
+        setErrorMessage("성장보고서를 불러오지 못했어요. 다시 시도해 주세요.");
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchReport();
+
+    return () => {
+      isActive = false;
+    };
+  }, [reportId, navigate, retryCount]);
+
+  const lesson = report?.lesson;
+
+  const comparison = report?.comparison;
+
+  const currentScore = comparison?.current_score ?? report?.score;
+
+  const previousScore = comparison?.previous_score;
+
+  const scoreDifference = comparison?.diff ?? 0;
+
+  const correctAnswers = report?.exam?.correct ?? 0;
+  const totalQuestions = report?.exam?.total ?? 0;
+
+  const strengths = report?.strengths || [];
+  const missedTerms = report?.missed_terms || [];
+  const reviewRecommendations = report?.review_recommendations || [];
+
+  const explainedTerms = report?.terms?.explained ?? 0;
+  const totalTerms = report?.terms?.total ?? 0;
+
+  const handleRetry = () => {
+    setErrorMessage("");
+    setIsLoading(true);
+    setRetryCount((previous) => previous + 1);
   };
 
-  const currentScore = Math.round(
-    (report.correctAnswers / report.totalQuestions) * 100,
-  );
-
-  const previousScore = Math.round(
-    (report.previousCorrectAnswers / report.totalQuestions) * 100,
-  );
-
-  const scoreDifference = currentScore - previousScore;
-
   const handleRetryTeaching = () => {
-    navigate("/teaching", {
-      state: {
-        studentId,
-        topic: report.topic,
-      },
-    });
+    navigate("/upload");
   };
 
   const handleRetest = () => {
+    if (!report) return;
+
     navigate("/retest", {
       state: {
-        studentId,
-        topic: report.topic,
-        reportId: reportId || "demo",
+        reportId: report.id,
+        lessonId: lesson.id,
+        topic: lesson.title,
+        studentName: lesson.persona_name,
       },
     });
   };
+
+  if (!reportId) {
+    return (
+      <div className="app-page growth-report-page">
+        <PageHeader
+          title="성장보고서"
+          description="오늘의 수업 결과를 확인해 보세요."
+        />
+
+        <div className="growth-report-page__state">
+          <p>성장보고서 ID가 없어요.</p>
+          <button type="button" onClick={() => navigate("/reports")}>
+            보고서 목록으로
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="app-page growth-report-page">
+        <PageHeader
+          title="성장보고서"
+          description="오늘의 수업 결과를 확인해 보세요."
+        />
+
+        <div className="growth-report-page__state" role="status">
+          성장보고서를 불러오는 중...
+        </div>
+      </div>
+    );
+  }
+
+  if (errorMessage || !report) {
+    return (
+      <div className="app-page growth-report-page">
+        <PageHeader
+          title="성장보고서"
+          description="오늘의 수업 결과를 확인해 보세요."
+        />
+
+        <div className="growth-report-page__state">
+          <p>{errorMessage || "성장보고서를 표시할 수 없어요."}</p>
+
+          <button type="button" onClick={handleRetry}>
+            다시 시도
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app-page growth-report-page">
@@ -104,7 +193,7 @@ function GrowthReportPage() {
                 <span className="growth-report-page__row-label">학습 주제</span>
 
                 <strong className="growth-report-page__row-value">
-                  {report.topic}
+                  {lesson.title}
                 </strong>
               </div>
 
@@ -112,7 +201,10 @@ function GrowthReportPage() {
                 <span className="growth-report-page__row-label">학생 AI</span>
 
                 <strong className="growth-report-page__row-value">
-                  {student.name} ({student.level})
+                  {lesson.persona_name}
+                  {lesson.persona_grade_label
+                    ? ` (${lesson.persona_grade_label})`
+                    : ""}
                 </strong>
               </div>
 
@@ -123,58 +215,85 @@ function GrowthReportPage() {
 
                 <div className="growth-report-page__score">
                   <strong>
-                    {report.correctAnswers} / {report.totalQuestions}
+                    {correctAnswers} / {totalQuestions}
                   </strong>
-                  <span>({currentScore}점)</span>
+
+                  <span>
+                    ({report.score != null ? `${report.score}점` : "점수 없음"})
+                  </span>
                 </div>
               </div>
-            </div>
-          </section>
 
-          <section className="growth-report-page__comparison">
-            <h2>이전 점수 비교</h2>
+              <div className="growth-report-page__report-row">
+                <span className="growth-report-page__row-label">
+                  설명한 핵심 용어
+                </span>
 
-            <div className="growth-report-page__comparison-card">
-              <div className="growth-report-page__comparison-item">
-                <span>이전 수업 {previousScore}점</span>
-
-                <strong>
-                  {report.previousCorrectAnswers}/{report.totalQuestions}
-                  <span> ({previousScore}점)</span>
+                <strong className="growth-report-page__row-value">
+                  {explainedTerms} / {totalTerms}
                 </strong>
               </div>
 
-              <span
-                className="growth-report-page__comparison-arrow"
-                aria-hidden="true"
-              >
-                →
-              </span>
+              {comparison && (
+                <div className="growth-report-page__report-row">
+                  <span className="growth-report-page__row-label">
+                    최근 평가 점수
+                  </span>
 
-              <div className="growth-report-page__comparison-item">
-                <span>이번 수업 {currentScore}점</span>
-
-                <strong>
-                  {report.correctAnswers}/{report.totalQuestions}
-                  <span> ({currentScore}점)</span>
-                </strong>
-              </div>
-
-              <div
-                className={`growth-report-page__score-change ${
-                  scoreDifference < 0
-                    ? "growth-report-page__score-change--negative"
-                    : ""
-                }`}
-              >
-                {scoreDifference > 0
-                  ? `▲ +${scoreDifference}점`
-                  : scoreDifference < 0
-                    ? `▼ ${scoreDifference}점`
-                    : "변동 없음"}
-              </div>
+                  <strong className="growth-report-page__row-value">
+                    {currentScore}점
+                  </strong>
+                </div>
+              )}
             </div>
           </section>
+
+          {comparison && (
+            <section className="growth-report-page__comparison">
+              <h2>이전 점수 비교</h2>
+
+              <div className="growth-report-page__comparison-card">
+                <div className="growth-report-page__comparison-item">
+                  <span>이전 평가</span>
+
+                  <strong>
+                    {previousScore}
+                    <span>점</span>
+                  </strong>
+                </div>
+
+                <span
+                  className="growth-report-page__comparison-arrow"
+                  aria-hidden="true"
+                >
+                  →
+                </span>
+
+                <div className="growth-report-page__comparison-item">
+                  <span>최근 평가</span>
+
+                  <strong>
+                    {currentScore}
+                    <span>점</span>
+                  </strong>
+                </div>
+
+                <div
+                  className={`growth-report-page__score-change ${
+                    scoreDifference < 0
+                      ? "growth-report-page__score-change--negative"
+                      : ""
+                  }`}
+                >
+                  {scoreDifference > 0
+                    ? `▲ +${scoreDifference}점`
+                    : scoreDifference < 0
+                      ? `▼ ${scoreDifference}점`
+                      : "변동 없음"}
+                </div>
+              </div>
+            </section>
+          )}
         </div>
 
         <div className="growth-report-page__right">
@@ -184,7 +303,15 @@ function GrowthReportPage() {
               <img src={goodIcon} alt="" />
             </div>
 
-            <p>{report.goodPoint}</p>
+            {strengths.length > 0 ? (
+              <div className="growth-report-page__feedback-list">
+                {strengths.map((item, index) => (
+                  <p key={index}>{item}</p>
+                ))}
+              </div>
+            ) : (
+              <p>아직 등록된 잘한 점이 없어요.</p>
+            )}
           </section>
 
           <section className="growth-report-page__feedback growth-report-page__feedback--missed">
@@ -193,7 +320,29 @@ function GrowthReportPage() {
               <img src={badIcon} alt="" />
             </div>
 
-            <p>{report.missedPoint}</p>
+            {missedTerms.length > 0 ? (
+              <div className="growth-report-page__feedback-list">
+                {missedTerms.map((term) => (
+                  <div
+                    key={term.term_id}
+                    className="growth-report-page__missed-item"
+                  >
+                    <strong>{term.name}</strong>
+
+                    <span>
+                      {term.status === "mentioned"
+                        ? "이름만 언급"
+                        : "설명하지 않음"}
+                      {term.wrong_count > 0
+                        ? ` · 관련 문제 ${term.wrong_count}개 오답`
+                        : ""}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p>놓친 핵심 개념이 없어요.</p>
+            )}
           </section>
 
           <section className="growth-report-page__feedback growth-report-page__feedback--review">
@@ -202,7 +351,15 @@ function GrowthReportPage() {
               <img src={retryBlueIcon} alt="" />
             </div>
 
-            <p>{report.reviewRecommendation}</p>
+            {reviewRecommendations.length > 0 ? (
+              <div className="growth-report-page__feedback-list">
+                {reviewRecommendations.map((item, index) => (
+                  <p key={`${item.term_id}-${index}`}>{item.text}</p>
+                ))}
+              </div>
+            ) : (
+              <p>현재 등록된 복습 추천이 없어요.</p>
+            )}
           </section>
         </div>
       </div>
