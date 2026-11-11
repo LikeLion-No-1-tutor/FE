@@ -81,6 +81,14 @@ export const AppRouter = createBrowserRouter([
         element: <RetestResultPage />,
       },
       {
+        path: "/retests/:retestId",
+        element: <RetestPage />,
+      },
+      {
+        path: "/retests/:retestId/result",
+        element: <RetestResultPage />,
+      },
+      {
         path: "/settings",
         element: <SettingsPage />,
       },
