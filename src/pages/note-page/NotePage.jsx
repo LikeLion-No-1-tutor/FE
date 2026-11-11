@@ -53,10 +53,6 @@ function NotePage() {
 
   useEffect(() => {
     if (!currentLessonId) {
-      setIsLoading(false);
-      setErrorMessage(
-        "수업 정보를 찾을 수 없어요. 수업 목록에서 다시 선택해 주세요.",
-      );
       return;
     }
 
@@ -170,7 +166,6 @@ function NotePage() {
       }
     };
 
-    setIsLoading(true);
     loadProgress();
 
     return () => {
@@ -365,9 +360,14 @@ function NotePage() {
         description="지금까지의 수업 내용을 정리했어요."
       />
 
-      {errorMessage && (
+      {(!currentLessonId || errorMessage) && (
         <div className="note-page__error" role="alert">
-          <p>{errorMessage}</p>
+          <p>
+            {!currentLessonId
+              ? "수업 정보를 찾을 수 없어요. 수업 목록에서 다시 선택해 주세요."
+              : errorMessage}
+          </p>
+
           {currentLessonId && (
             <button type="button" onClick={handleRetry}>
               다시 시도
@@ -394,7 +394,7 @@ function NotePage() {
 
           <div className="note-page__note-grid">
             <div className="note-page__note-content">
-              {isLoading && !progress ? (
+              {currentLessonId && isLoading && !progress ? (
                 <div className="note-page__empty-state">
                   <h3>수업 정보를 불러오는 중이에요</h3>
                 </div>
