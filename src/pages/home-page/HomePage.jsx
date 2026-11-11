@@ -293,7 +293,7 @@ function HomePage() {
         <button
           type="button"
           className="home-page__action"
-          onClick={() => navigate("/notes")}
+          onClick={() => navigate("/notes?view=notes")}
         >
           <img src={openBookIcon} alt="" />
           <span>정리노트 보기</span>
@@ -313,7 +313,7 @@ function HomePage() {
           <button
             type="button"
             className="home-page__more"
-            onClick={() => navigate("/notes")}
+            onClick={() => navigate("/notes?view=all")}
           >
             <span>더보기</span>
             <span aria-hidden="true">›</span>
