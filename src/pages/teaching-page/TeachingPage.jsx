@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import {
+  getLesson,
+  getLessonMessages,
+  sendLessonMessage,
+  askHandRaise,
+  endLesson,
+} from "../../api/lessonApi";
+
 import listCheckIcon from "../../assets/icons/list-check.svg";
 import handIcon from "../../assets/icons/hand.svg";
 import sendIcon from "../../assets/icons/send.svg";
@@ -14,179 +22,445 @@ import doyoonProfile from "../../assets/images/Doyoon-profile.svg";
 import "./TeachingPage.css";
 
 const studentMap = {
-  elementary: {
-    name: "김하린",
-    level: "초등학교 5학년",
+  haneul: {
     profile: harinProfile,
-    greeting:
-      "안녕하세요, 선생님! 저는 초등학교 5학년 김하린이에요. 오늘 수업을 들으러 왔어요. 잘 부탁드려요!",
-    question: "선생님! 스택은 왜 마지막에 넣은 데이터를 먼저 꺼내는 건가요?",
+    name: "하늘",
   },
-  highschool: {
-    name: "이도윤",
-    level: "고등학교 3학년",
+  minjun: {
     profile: doyoonProfile,
-    greeting:
-      "안녕하세요, 선생님. 저는 고등학교 3학년 이도윤입니다. 오늘 설명을 잘 듣고 이해해 볼게요!",
-    question: "스택과 큐의 차이를 예시와 함께 설명해 주실 수 있나요?",
+    name: "민준",
   },
-  college: {
-    name: "최서윤",
-    level: "대학교 2학년",
+  seoyeon: {
     profile: seoyoonProfile,
-    greeting:
-      "안녕하세요! 저는 대학교 2학년 최서윤이에요. 오늘 배울 내용을 실제 사례와 연결해서 이해하고 싶어요.",
-    question: "큐는 실제 프로그램에서 어떤 상황에 활용할 수 있나요?",
+    name: "서연",
   },
-  professor: {
-    name: "박영호",
-    level: "대학 교수님",
+  hyunwoo: {
     profile: yonghoProfile,
-    greeting:
-      "안녕하세요. 박영호입니다. 오늘 주제에 대한 설명을 듣고 함께 논의해 보겠습니다.",
-    question: "스택과 큐의 동작 원리와 시간 복잡도를 함께 설명해 주시겠습니까?",
+    name: "정현우 교수님",
   },
 };
 
-const checklistItems = [
-  { id: 1, text: "스택", checked: true },
-  { id: 2, text: "후입선출(LIFO)", checked: true },
-  { id: 3, text: "큐", checked: false },
-  { id: 4, text: "선입선출(FIFO)", checked: false },
-];
+function formatTime(createdAt) {
+  if (!createdAt) return "";
 
-function getMessageTime() {
-  return new Date().toLocaleTimeString("ko-KR", {
+  const date = new Date(createdAt);
+
+  if (Number.isNaN(date.getTime())) return "";
+
+  return date.toLocaleTimeString("ko-KR", {
     hour: "numeric",
     minute: "2-digit",
   });
 }
 
-function createMessage(sender, text, type = "normal") {
-  return {
-    id: crypto.randomUUID(),
-    sender,
-    type,
-    text,
-    time: getMessageTime(),
-  };
+function getErrorMessage(error) {
+  switch (error.code) {
+    case "VALIDATION_ERROR":
+      return "설명은 1~3,000자로 입력해 주세요.";
+
+    case "AI_ERROR":
+      return "AI 처리에 실패했어요. 다시 시도해 주세요.";
+
+    case "HAND_ALREADY_ASKED":
+      return "이미 받은 질문이에요. 대화를 다시 불러올게요.";
+
+    case "LESSON_NOT_TEACHING":
+      return "이미 종료된 수업이에요.";
+
+    default:
+      return "잠시 문제가 생겼어요. 다시 시도해 주세요.";
+  }
+}
+
+function findUnansweredQuestion(messages) {
+  const answeredIds = new Set(
+    messages
+      .filter(
+        (message) =>
+          message.sender === "teacher" &&
+          message.kind === "answer" &&
+          message.reply_to_id != null,
+      )
+      .map((message) => message.reply_to_id),
+  );
+
+  const unanswered = messages.filter(
+    (message) =>
+      message.sender === "student" &&
+      message.kind === "question" &&
+      !answeredIds.has(message.id),
+  );
+
+  return unanswered.length > 0 ? unanswered[unanswered.length - 1].id : null;
 }
 
 function TeachingPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const studentId =
-    location.state?.studentId ||
-    sessionStorage.getItem("teachingStudentId") ||
-    "elementary";
+  const lessonId =
+    location.state?.lessonId || sessionStorage.getItem("lesson_id");
 
-  const student = studentMap[studentId] || studentMap.elementary;
+  const initialLesson = location.state?.lesson || null;
 
-  const topic = location.state?.topic || "스택과 큐";
+  const studentCode =
+    location.state?.studentId || sessionStorage.getItem("teachingStudentId");
+
+  const studentProfile = studentMap[studentCode] || null;
+
+  const [lesson, setLesson] = useState(initialLesson);
+  const [messages, setMessages] = useState(
+    initialLesson?.messages || location.state?.messages || [],
+  );
+  const [handRaises, setHandRaises] = useState([]);
+  const [terms, setTerms] = useState(initialLesson?.terms || []);
 
   const [inputValue, setInputValue] = useState("");
-  const [messages, setMessages] = useState(() => [
-    createMessage("student", student.greeting),
-  ]);
+  const [replyToId, setReplyToId] = useState(null);
 
   const [showChecklist, setShowChecklist] = useState(false);
   const [modalType, setModalType] = useState(null);
 
-  const messagesEndRef = useRef(null);
-  const questionTimerRef = useRef(null);
-  const modalTimerRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
+  const [askingHandId, setAskingHandId] = useState(null);
+  const [isEnding, setIsEnding] = useState(false);
 
-  const checkedCount = checklistItems.filter((item) => item.checked).length;
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const messagesEndRef = useRef(null);
+  const operationRef = useRef(false);
+
+  const topic =
+    lesson?.material?.title ||
+    location.state?.topic ||
+    sessionStorage.getItem("teachingTitle") ||
+    "수업";
+
+  const studentName =
+    lesson?.persona?.name ||
+    location.state?.studentName ||
+    studentProfile?.name ||
+    "AI 학생";
+
+  const studentAvatar = studentProfile?.profile || null;
+
+  const lessonStatus = lesson?.status || "teaching";
+  const isReadOnly = lessonStatus !== "teaching";
+
+  const checkedCount = terms.filter(
+    (term) => term.status === "explained",
+  ).length;
+
+  const pendingHands = handRaises.filter((item) => item.status === "raised");
+
+  const isBusy = isLoading || isSending || askingHandId !== null || isEnding;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "nearest",
     });
-  }, [messages]);
+  }, [messages, handRaises, isSending]);
 
   useEffect(() => {
-    return () => {
-      if (questionTimerRef.current) {
-        clearTimeout(questionTimerRef.current);
-      }
-
-      if (modalTimerRef.current) {
-        clearTimeout(modalTimerRef.current);
-      }
-    };
-  }, []);
-
-  const handleSend = () => {
-    const trimmed = inputValue.trim();
-
-    if (!trimmed || modalType) return;
-
-    if (questionTimerRef.current) {
-      clearTimeout(questionTimerRef.current);
-      questionTimerRef.current = null;
+    if (!lessonId) {
+      navigate("/home", { replace: true });
+      return;
     }
 
-    setMessages((prev) => [
-      ...prev.filter((message) => message.type !== "pending"),
-      createMessage("teacher", trimmed),
+    let cancelled = false;
+
+    const loadLesson = async () => {
+      setIsLoading(true);
+      setErrorMessage("");
+
+      try {
+        const [lessonData, chatData] = await Promise.all([
+          getLesson(lessonId),
+          getLessonMessages(lessonId),
+        ]);
+
+        if (cancelled) return;
+
+        setLesson(lessonData);
+        setTerms(lessonData.terms || []);
+        setMessages(chatData.messages || []);
+        setHandRaises(chatData.hand_raises || []);
+
+        setReplyToId(findUnansweredQuestion(chatData.messages || []));
+
+        sessionStorage.setItem("lesson_id", String(lessonData.id));
+
+        sessionStorage.setItem(
+          "teachingTitle",
+          lessonData.material?.title || "",
+        );
+      } catch (error) {
+        if (cancelled) return;
+
+        console.error("수업 조회 실패:", {
+          code: error.code,
+          status: error.status,
+          requestId: error.requestId,
+        });
+
+        if (error.code === "NICKNAME_REQUIRED") {
+          navigate("/nickname", { replace: true });
+          return;
+        }
+
+        if (error.code === "UNAUTHORIZED") {
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        if (error.code === "NOT_FOUND" || error.code === "FORBIDDEN") {
+          navigate("/home", {
+            replace: true,
+            state: {
+              errorMessage: "수업을 찾을 수 없어요.",
+            },
+          });
+          return;
+        }
+
+        setErrorMessage("수업 정보를 불러오지 못했어요. 다시 시도해 주세요.");
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadLesson();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lessonId, navigate]);
+
+  const refreshLessonData = async () => {
+    const [lessonData, chatData] = await Promise.all([
+      getLesson(lessonId),
+      getLessonMessages(lessonId),
     ]);
 
-    setInputValue("");
+    setLesson(lessonData);
+    setTerms(lessonData.terms || []);
+    setMessages(chatData.messages || []);
+    setHandRaises(chatData.hand_raises || []);
 
-    questionTimerRef.current = setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        createMessage("student", student.question, "pending"),
-      ]);
-
-      questionTimerRef.current = null;
-    }, 2000);
+    setReplyToId(findUnansweredQuestion(chatData.messages || []));
   };
 
-  const handleOpenQuestion = (messageId) => {
-    setMessages((prev) =>
-      prev.map((message) =>
-        message.id === messageId && message.type === "pending"
-          ? {
-              ...message,
-              type: "normal",
-              time: getMessageTime(),
-            }
-          : message,
-      ),
-    );
+  const handleSend = async () => {
+    const content = inputValue.trim();
+
+    if (
+      !content ||
+      content.length > 3000 ||
+      isBusy ||
+      isReadOnly ||
+      operationRef.current
+    ) {
+      return;
+    }
+
+    operationRef.current = true;
+    setIsSending(true);
+    setErrorMessage("");
+
+    try {
+      const result = await sendLessonMessage(lessonId, {
+        content,
+        replyToId,
+      });
+
+      setMessages((previous) => [...previous, result.message]);
+
+      setTerms((previous) =>
+        previous.map((term) => {
+          const updated = result.term_updates?.find(
+            (item) => item.term_id === term.term_id,
+          );
+
+          return updated ? { ...term, status: updated.status } : term;
+        }),
+      );
+
+      if (result.new_hand_raise) {
+        setHandRaises((previous) => [...previous, result.new_hand_raise]);
+      }
+
+      setInputValue("");
+      setReplyToId(null);
+    } catch (error) {
+      console.error("설명 전송 실패:", {
+        code: error.code,
+        status: error.status,
+        requestId: error.requestId,
+      });
+
+      if (error.code === "LESSON_NOT_TEACHING") {
+        setLesson((previous) => ({
+          ...previous,
+          status: "evaluating",
+        }));
+      }
+
+      setErrorMessage(getErrorMessage(error));
+    } finally {
+      operationRef.current = false;
+      setIsSending(false);
+    }
+  };
+
+  const handleAskQuestion = async (handRaiseId) => {
+    if (isBusy || isReadOnly || operationRef.current) {
+      return;
+    }
+
+    operationRef.current = true;
+    setAskingHandId(handRaiseId);
+    setErrorMessage("");
+
+    try {
+      const result = await askHandRaise(lessonId, handRaiseId);
+
+      setHandRaises((previous) =>
+        previous.map((item) =>
+          item.id === handRaiseId ? result.hand_raise : item,
+        ),
+      );
+
+      setMessages((previous) => [...previous, result.question]);
+
+      setReplyToId(result.question.id);
+    } catch (error) {
+      console.error("질문 받기 실패:", {
+        code: error.code,
+        status: error.status,
+        requestId: error.requestId,
+      });
+
+      if (error.code === "HAND_ALREADY_ASKED") {
+        try {
+          await refreshLessonData();
+        } catch (refreshError) {
+          console.error("대화 다시 조회 실패:", refreshError);
+          setErrorMessage("대화를 다시 불러오지 못했어요.");
+        }
+      } else {
+        if (error.code === "LESSON_NOT_TEACHING") {
+          setLesson((previous) => ({
+            ...previous,
+            status: "evaluating",
+          }));
+        }
+
+        setErrorMessage(getErrorMessage(error));
+      }
+    } finally {
+      operationRef.current = false;
+      setAskingHandId(null);
+    }
   };
 
   const handleSaveClass = () => {
-    if (modalType) return;
+    if (isBusy || operationRef.current) return;
 
     setShowChecklist(false);
-    setModalType("save");
-
-    modalTimerRef.current = setTimeout(() => {
-      setModalType(null);
-      modalTimerRef.current = null;
-    }, 1800);
+    navigate("/home");
   };
 
   const handleEndClass = () => {
-    if (modalType) return;
+    if (isBusy || isReadOnly) return;
 
     setShowChecklist(false);
-    setModalType("end");
+    setErrorMessage("");
+    setModalType("end-confirm");
+  };
 
-    if (questionTimerRef.current) {
-      clearTimeout(questionTimerRef.current);
-      questionTimerRef.current = null;
+  const handleConfirmEnd = async () => {
+    if (isEnding || isBusy || operationRef.current) {
+      return;
     }
 
-    modalTimerRef.current = setTimeout(() => {
+    operationRef.current = true;
+    setIsEnding(true);
+    setModalType("ending");
+    setErrorMessage("");
+
+    try {
+      const result = await endLesson(lessonId);
+
+      sessionStorage.setItem("lesson_id", String(result.id));
+
+      navigate("/assessment", {
+        replace: true,
+        state: {
+          lessonId: result.id,
+          lessonStatus: result.status,
+        },
+      });
+    } catch (error) {
+      console.error("수업 종료 실패:", {
+        code: error.code,
+        status: error.status,
+        requestId: error.requestId,
+      });
+
+      if (error.code === "LESSON_NOT_TEACHING") {
+        navigate("/assessment", {
+          replace: true,
+          state: {
+            lessonId,
+            lessonStatus: "evaluating",
+          },
+        });
+        return;
+      }
+
+      setErrorMessage(getErrorMessage(error));
       setModalType(null);
-      modalTimerRef.current = null;
-      navigate("/notes/demo");
-    }, 1800);
+    } finally {
+      operationRef.current = false;
+      setIsEnding(false);
+    }
+  };
+
+  const renderHandRaise = (handRaise) => {
+    const isAsked = handRaise.status === "asked";
+    const isAsking = askingHandId === handRaise.id;
+
+    return (
+      <button
+        key={`hand-${handRaise.id}`}
+        type="button"
+        className={`teaching-page__question-bubble ${
+          isAsked ? "teaching-page__question-bubble--asked" : ""
+        }`}
+        onClick={() => handleAskQuestion(handRaise.id)}
+        disabled={isAsked || isBusy || isReadOnly}
+      >
+        <img src={handIcon} alt="" />
+
+        <span>
+          {isAsking
+            ? "질문 만드는 중..."
+            : isAsked
+              ? "질문했어요"
+              : "질문 있어요!"}
+        </span>
+
+        {!isAsked && !isAsking && (
+          <span className="teaching-page__question-arrow" aria-hidden="true">
+            ›
+          </span>
+        )}
+      </button>
+    );
   };
 
   return (
@@ -196,8 +470,9 @@ function TeachingPage() {
           <button
             type="button"
             className="teaching-page__back-button"
-            onClick={() => navigate(-1)}
+            onClick={handleSaveClass}
             aria-label="뒤로가기"
+            disabled={isBusy}
           >
             <img src={chevronRightIcon} alt="" />
           </button>
@@ -208,12 +483,12 @@ function TeachingPage() {
             <button
               type="button"
               className="teaching-page__check-button"
-              onClick={() => setShowChecklist((prev) => !prev)}
+              onClick={() => setShowChecklist((previous) => !previous)}
               aria-expanded={showChecklist}
             >
               <img src={listCheckIcon} alt="" />
               <span>
-                용어 체크 {checkedCount}/{checklistItems.length}
+                용어 체크 {checkedCount}/{terms.length}
               </span>
             </button>
 
@@ -228,19 +503,30 @@ function TeachingPage() {
                 </p>
 
                 <ul className="teaching-page__check-list">
-                  {checklistItems.map((item) => (
-                    <li key={item.id} className="teaching-page__check-item">
+                  {terms.map((term) => (
+                    <li
+                      key={term.term_id}
+                      className="teaching-page__check-item"
+                    >
                       <span
                         className={`teaching-page__check-box ${
-                          item.checked
+                          term.status === "explained"
                             ? "teaching-page__check-box--checked"
                             : ""
                         }`}
                       >
-                        {item.checked ? "✓" : ""}
+                        {term.status === "explained"
+                          ? "✓"
+                          : term.status === "mentioned"
+                            ? "·"
+                            : ""}
                       </span>
 
-                      <span>{item.text}</span>
+                      <span>{term.name}</span>
+
+                      {term.status === "mentioned" && (
+                        <span className="teaching-page__term-status">언급</span>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -254,6 +540,7 @@ function TeachingPage() {
             type="button"
             className="teaching-page__save-button"
             onClick={handleSaveClass}
+            disabled={isBusy}
           >
             수업 저장
           </button>
@@ -262,6 +549,7 @@ function TeachingPage() {
             type="button"
             className="teaching-page__end-button"
             onClick={handleEndClass}
+            disabled={isBusy || isReadOnly}
           >
             수업 종료
           </button>
@@ -273,119 +561,189 @@ function TeachingPage() {
         aria-label="AI 학생과의 수업 채팅"
       >
         <div className="teaching-page__messages">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`teaching-page__message-row ${
-                message.sender === "teacher"
-                  ? "teaching-page__message-row--teacher"
-                  : "teaching-page__message-row--student"
-              }`}
-            >
-              {message.sender === "student" && (
-                <img
-                  src={student.profile}
-                  alt=""
-                  className="teaching-page__message-avatar"
-                />
-              )}
+          {isLoading && (
+            <p className="teaching-page__notice">수업 내용을 불러오는 중...</p>
+          )}
 
-              <div className="teaching-page__message-content">
-                {message.sender === "student" && (
-                  <strong className="teaching-page__message-name">
-                    {student.name}
-                  </strong>
-                )}
+          {!isLoading &&
+            messages.map((message) => {
+              const attachedHands = handRaises.filter(
+                (item) => item.after_message_id === message.id,
+              );
 
-                {message.type === "pending" ? (
-                  <button
-                    type="button"
-                    className="teaching-page__question-bubble"
-                    onClick={() => handleOpenQuestion(message.id)}
-                    aria-label={`${student.name} 학생의 질문 확인하기`}
-                  >
-                    <img src={handIcon} alt="" />
+              return (
+                <div
+                  key={message.id}
+                  className={`teaching-page__message-row ${
+                    message.sender === "teacher"
+                      ? "teaching-page__message-row--teacher"
+                      : "teaching-page__message-row--student"
+                  }`}
+                >
+                  {message.sender === "student" && studentAvatar && (
+                    <img
+                      src={studentAvatar}
+                      alt=""
+                      className="teaching-page__message-avatar"
+                    />
+                  )}
 
-                    <span>질문 있어요!</span>
+                  <div className="teaching-page__message-content">
+                    {message.sender === "student" && (
+                      <strong className="teaching-page__message-name">
+                        {studentName}
+                      </strong>
+                    )}
 
-                    <span
-                      className="teaching-page__question-arrow"
-                      aria-hidden="true"
+                    <div
+                      className={`teaching-page__message-bubble ${
+                        message.sender === "teacher"
+                          ? "teaching-page__message-bubble--teacher"
+                          : "teaching-page__message-bubble--student"
+                      }`}
                     >
-                      ›
-                    </span>
-                  </button>
-                ) : (
-                  <div
-                    className={`teaching-page__message-bubble ${
-                      message.sender === "teacher"
-                        ? "teaching-page__message-bubble--teacher"
-                        : "teaching-page__message-bubble--student"
-                    }`}
-                  >
-                    <p>{message.text}</p>
-                  </div>
-                )}
+                      <p>{message.content}</p>
+                    </div>
 
-                <span className="teaching-page__message-time">
-                  {message.time}
-                </span>
-              </div>
-            </div>
-          ))}
+                    <span className="teaching-page__message-time">
+                      {formatTime(message.created_at)}
+                    </span>
+
+                    {attachedHands.length > 0 && (
+                      <div className="teaching-page__hands">
+                        {attachedHands.map(renderHandRaise)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+          {isSending && (
+            <p className="teaching-page__notice">
+              AI 학생이 설명을 확인하고 있어요...
+            </p>
+          )}
+
+          {errorMessage && (
+            <p className="teaching-page__error" role="alert">
+              {errorMessage}
+            </p>
+          )}
 
           <div ref={messagesEndRef} />
         </div>
 
-        <form
-          className="teaching-page__input-wrap"
-          onSubmit={(event) => {
-            event.preventDefault();
-            handleSend();
-          }}
-        >
-          <input
-            type="text"
-            className="teaching-page__input"
-            placeholder="학생에게 개념을 설명해 주세요"
-            value={inputValue}
-            onChange={(event) => setInputValue(event.target.value)}
-            disabled={modalType !== null}
-          />
+        {!isReadOnly && (
+          <>
+            {replyToId !== null && (
+              <div className="teaching-page__reply-notice">
+                <span>학생 질문에 답변하는 중</span>
 
-          <button
-            type="submit"
-            className="teaching-page__send-button"
-            disabled={!inputValue.trim() || modalType !== null}
-            aria-label="메시지 전송"
-          >
-            <img src={sendIcon} alt="" />
-          </button>
-        </form>
+                <button
+                  type="button"
+                  onClick={() => setReplyToId(null)}
+                  disabled={isBusy}
+                >
+                  일반 설명으로 변경
+                </button>
+              </div>
+            )}
+
+            {pendingHands.length > 0 && (
+              <div className="teaching-page__hand-notice">
+                <span>
+                  {studentName} 학생이 손을 들었어요. ({pendingHands.length}개)
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => handleAskQuestion(pendingHands[0].id)}
+                  disabled={isBusy}
+                >
+                  <img src={handIcon} alt="" />
+                  질문 받기
+                </button>
+              </div>
+            )}
+
+            <form
+              className="teaching-page__input-wrap"
+              onSubmit={(event) => {
+                event.preventDefault();
+                handleSend();
+              }}
+            >
+              <input
+                type="text"
+                className="teaching-page__input"
+                placeholder={
+                  replyToId !== null
+                    ? "학생의 질문에 답변해 주세요"
+                    : "학생에게 개념을 설명해 주세요"
+                }
+                value={inputValue}
+                onChange={(event) => setInputValue(event.target.value)}
+                maxLength={3000}
+                disabled={isBusy}
+              />
+
+              <button
+                type="submit"
+                className="teaching-page__send-button"
+                disabled={!inputValue.trim() || isBusy}
+                aria-label={isSending ? "설명 전송 중" : "메시지 전송"}
+              >
+                <img src={sendIcon} alt="" />
+              </button>
+            </form>
+          </>
+        )}
+
+        {isReadOnly && (
+          <p className="teaching-page__read-only">
+            종료된 수업입니다. 이전 대화를 확인할 수 있어요.
+          </p>
+        )}
       </section>
 
       {modalType && (
         <div className="teaching-page__modal-backdrop">
           <div
             className="teaching-page__modal"
-            role="status"
-            aria-live="polite"
+            role={modalType === "end-confirm" ? "dialog" : "status"}
+            aria-modal="true"
+            aria-labelledby="teaching-modal-title"
           >
-            <h2>
-              {modalType === "save" ? "수업 저장 중!" : "정리노트 생성 중"}
-            </h2>
+            {modalType === "end-confirm" ? (
+              <>
+                <h2 id="teaching-modal-title">수업을 종료할까요?</h2>
 
-            <p>
-              {modalType === "save"
-                ? "지금까지의 수업 내용을 저장하고 있어요."
-                : "수업 내용을 바탕으로 정리노트를 만들고 있어요."}
-            </p>
+                <p>수업을 종료하면 정리노트와 성장보고서 생성을 시작해요.</p>
 
-            <div className="teaching-page__loading-dots" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </div>
+                <div className="teaching-page__modal-actions">
+                  <button type="button" onClick={() => setModalType(null)}>
+                    취소
+                  </button>
+
+                  <button type="button" onClick={handleConfirmEnd}>
+                    수업 종료
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 id="teaching-modal-title">수업을 종료하고 있어요</h2>
+
+                <p>수업 내용을 저장하고 평가를 준비하고 있어요.</p>
+
+                <div className="teaching-page__loading-dots" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
