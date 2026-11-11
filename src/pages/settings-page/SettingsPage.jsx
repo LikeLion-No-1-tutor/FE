@@ -419,3 +419,49 @@ function SettingsPage() {
 }
 
 export default SettingsPage;
+.settings-page__modal-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 128px;
+  min-height: 42px;
+
+  background-color: #bc6557;
+  border: none;
+  border-radius: 24px;
+
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+
+  opacity: 1;
+  cursor: pointer;
+}
+
+.settings-page__modal-delete:not(:disabled):hover {
+  background-color: #a85246;
+}
+
+.settings-page__modal-delete:disabled {
+  background-color: #bc6557;
+  color: #ffffff;
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.settings-page__modal-delete:not(:disabled) {
+  opacity: 1;
+}
+
+.settings-page__logout-question {
+  max-width: 290px;
+  margin: 28px auto 30px;
+
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+  text-align: center;
+  word-break: keep-all;
+}
