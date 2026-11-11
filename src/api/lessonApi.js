@@ -183,3 +183,59 @@ export async function getLessonProgress(lessonId) {
 
   return data;
 }
+
+export async function getLessons({ status, page = 1, size = 20 } = {}) {
+  if (status && !["teaching", "completed"].includes(status)) {
+    const error = new Error("올바르지 않은 학습 상태입니다.");
+    error.code = "VALIDATION_ERROR";
+    throw error;
+  }
+
+  if (
+    !Number.isInteger(page) ||
+    page < 1 ||
+    !Number.isInteger(size) ||
+    size < 1
+  ) {
+    const error = new Error("페이지 정보가 올바르지 않습니다.");
+    error.code = "VALIDATION_ERROR";
+    throw error;
+  }
+
+  const params = new URLSearchParams();
+
+  if (status) {
+    params.set("status", status);
+  }
+
+  params.set("page", String(page));
+  params.set("size", String(size));
+
+  const response = await apiFetch(`/api/lessons?${params.toString()}`);
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const error = new Error(data?.error?.message || "잠시 문제가 생겼어요.");
+
+    error.code = data?.error?.code || "SERVER_ERROR";
+    error.status = response.status;
+    error.requestId =
+      data?.error?.request_id || response.headers.get("X-Request-ID");
+
+    throw error;
+  }
+
+  if (
+    !Array.isArray(data?.items) ||
+    typeof data?.page !== "number" ||
+    typeof data?.size !== "number" ||
+    typeof data?.total !== "number"
+  ) {
+    const error = new Error("학습 목록 응답이 올바르지 않습니다.");
+    error.code = "INVALID_RESPONSE";
+    throw error;
+  }
+
+  return data;
+}
