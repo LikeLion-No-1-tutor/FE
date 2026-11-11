@@ -6,6 +6,7 @@ import BrandLogo from "../../components/common/BrandLogo";
 import openBookIcon from "../../assets/icons/open-book.svg";
 import { loginWithGoogle } from "../../api/authApi";
 
+import { saveAuth } from "../../utils/authStorage";
 import "./LoginPage.css";
 
 function LoginPage() {
@@ -25,11 +26,7 @@ function LoginPage() {
     try {
       const data = await loginWithGoogle(credentialResponse.credential);
 
-      sessionStorage.setItem("access_token", data.access_token);
-
-      sessionStorage.setItem("refresh_token", data.refresh_token);
-
-      sessionStorage.setItem("user", JSON.stringify(data.user));
+      saveAuth(data);
 
       if (data.user.nickname) {
         sessionStorage.setItem("nickname", data.user.nickname);
