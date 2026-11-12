@@ -42,7 +42,7 @@
   width: 24px;
   height: 24px;
   object-fit: contain;
-  transform: rotate(180deg);
+  transform: rotate(0deg);
 }
 
 .teaching-page__title {
