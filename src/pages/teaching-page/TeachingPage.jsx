@@ -280,7 +280,23 @@ function TeachingPage() {
         replyToId,
       });
 
-      setMessages((previous) => [...previous, result.message]);
+      const reactionMessage =
+        typeof result.reaction === "string" && result.reaction.trim()
+          ? {
+              id: `reaction-${result.message.id}`,
+              sender: "student",
+              kind: "reaction",
+              content: result.reaction,
+              reply_to_id: result.message.id,
+              created_at: new Date().toISOString(),
+            }
+          : null;
+
+      setMessages((previous) => [
+        ...previous,
+        result.message,
+        ...(reactionMessage ? [reactionMessage] : []),
+      ]);
 
       setTerms((previous) =>
         previous.map((term) => {
