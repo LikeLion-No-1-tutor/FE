@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import {
@@ -106,8 +106,6 @@ function TeachingPage() {
   const studentCode =
     location.state?.studentId || sessionStorage.getItem("teachingStudentId");
 
-  const studentProfile = studentMap[studentCode] || null;
-
   const [lesson, setLesson] = useState(initialLesson);
   const [messages, setMessages] = useState(
     initialLesson?.messages || location.state?.messages || [],
@@ -137,6 +135,13 @@ function TeachingPage() {
     sessionStorage.getItem("teachingTitle") ||
     "수업";
 
+  const studentProfile =
+    studentMap[studentCode] ||
+    Object.values(studentMap).find(
+      (student) => student.name === lesson?.persona?.name,
+    ) ||
+    null;
+
   const studentName =
     lesson?.persona?.name ||
     location.state?.studentName ||
@@ -151,8 +156,6 @@ function TeachingPage() {
   const checkedCount = terms.filter(
     (term) => term.status === "explained",
   ).length;
-
-  const pendingHands = handRaises.filter((item) => item.status === "raised");
 
   const isBusy = isLoading || isSending || askingHandId !== null || isEnding;
 
@@ -450,7 +453,7 @@ function TeachingPage() {
             ? "질문 만드는 중..."
             : isAsked
               ? "질문했어요"
-              : "질문 있어요!"}
+              : "질문 받기"}
         </span>
 
         {!isAsked && !isAsking && (
@@ -571,50 +574,81 @@ function TeachingPage() {
               );
 
               return (
-                <div
-                  key={message.id}
-                  className={`teaching-page__message-row ${
-                    message.sender === "teacher"
-                      ? "teaching-page__message-row--teacher"
-                      : "teaching-page__message-row--student"
-                  }`}
-                >
-                  {message.sender === "student" && studentAvatar && (
-                    <img
-                      src={studentAvatar}
-                      alt=""
-                      className="teaching-page__message-avatar"
-                    />
-                  )}
+                <Fragment key={message.id}>
+                  <div
+                    className={`teaching-page__message-row ${
+                      message.sender === "teacher"
+                        ? "teaching-page__message-row--teacher"
+                        : "teaching-page__message-row--student"
+                    }`}
+                  >
+                    {message.sender === "student" &&
+                      (studentAvatar ? (
+                        <img
+                          src={studentAvatar}
+                          alt=""
+                          className="teaching-page__message-avatar"
+                        />
+                      ) : (
+                        <span
+                          className="teaching-page__message-avatar teaching-page__message-avatar--fallback"
+                          aria-hidden="true"
+                        >
+                          {studentName.slice(0, 1)}
+                        </span>
+                      ))}
 
-                  <div className="teaching-page__message-content">
-                    {message.sender === "student" && (
-                      <strong className="teaching-page__message-name">
-                        {studentName}
-                      </strong>
-                    )}
+                    <div className="teaching-page__message-content">
+                      {message.sender === "student" && (
+                        <strong className="teaching-page__message-name">
+                          {studentName}
+                        </strong>
+                      )}
 
-                    <div
-                      className={`teaching-page__message-bubble ${
-                        message.sender === "teacher"
-                          ? "teaching-page__message-bubble--teacher"
-                          : "teaching-page__message-bubble--student"
-                      }`}
-                    >
-                      <p>{message.content}</p>
-                    </div>
-
-                    <span className="teaching-page__message-time">
-                      {formatTime(message.created_at)}
-                    </span>
-
-                    {attachedHands.length > 0 && (
-                      <div className="teaching-page__hands">
-                        {attachedHands.map(renderHandRaise)}
+                      <div
+                        className={`teaching-page__message-bubble ${
+                          message.sender === "teacher"
+                            ? "teaching-page__message-bubble--teacher"
+                            : "teaching-page__message-bubble--student"
+                        }`}
+                      >
+                        <p>{message.content}</p>
                       </div>
-                    )}
+
+                      <span className="teaching-page__message-time">
+                        {formatTime(message.created_at)}
+                      </span>
+                    </div>
                   </div>
-                </div>
+
+                  {attachedHands.length > 0 && (
+                    <div className="teaching-page__message-row teaching-page__message-row--student teaching-page__hand-row">
+                      {studentAvatar ? (
+                        <img
+                          src={studentAvatar}
+                          alt=""
+                          className="teaching-page__message-avatar"
+                        />
+                      ) : (
+                        <span
+                          className="teaching-page__message-avatar teaching-page__message-avatar--fallback"
+                          aria-hidden="true"
+                        >
+                          {studentName.slice(0, 1)}
+                        </span>
+                      )}
+
+                      <div className="teaching-page__hand-content">
+                        <strong className="teaching-page__message-name">
+                          {studentName}
+                        </strong>
+                        <div className="teaching-page__hands">
+                          {attachedHands.map(renderHandRaise)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </Fragment>
               );
             })}
 
@@ -645,23 +679,6 @@ function TeachingPage() {
                   disabled={isBusy}
                 >
                   일반 설명으로 변경
-                </button>
-              </div>
-            )}
-
-            {pendingHands.length > 0 && (
-              <div className="teaching-page__hand-notice">
-                <span>
-                  {studentName} 학생이 손을 들었어요. ({pendingHands.length}개)
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() => handleAskQuestion(pendingHands[0].id)}
-                  disabled={isBusy}
-                >
-                  <img src={handIcon} alt="" />
-                  질문 받기
                 </button>
               </div>
             )}
