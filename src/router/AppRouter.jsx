@@ -74,11 +74,11 @@ export const AppRouter = createBrowserRouter([
       },
       {
         path: "/retest",
-        element: <RetestPage />,
+        element: <Navigate to="/reports" replace />,
       },
       {
         path: "/retest/result",
-        element: <RetestResultPage />,
+        element: <Navigate to="/reports" replace />,
       },
       {
         path: "/retests/:retestId",
