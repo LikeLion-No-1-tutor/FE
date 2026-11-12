@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { getReport } from "../../api/reportApi";
+import { createRetest } from "../../api/retestApi";
 
 import PageHeader from "../../components/common/PageHeader";
 
@@ -21,6 +22,9 @@ function GrowthReportPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [retryCount, setRetryCount] = useState(0);
+
+  const [isCreatingRetest, setIsCreatingRetest] = useState(false);
+  const [retestError, setRetestError] = useState("");
 
   useEffect(() => {
     if (!reportId) return;
@@ -109,17 +113,69 @@ function GrowthReportPage() {
     navigate("/upload");
   };
 
-  const handleRetest = () => {
-    if (!report) return;
+  const handleRetest = async () => {
+    if (!report || isCreatingRetest) return;
 
-    navigate("/retest", {
-      state: {
-        reportId: report.id,
-        lessonId: lesson.id,
-        topic: lesson.title,
-        studentName: lesson.persona_name,
-      },
-    });
+    setIsCreatingRetest(true);
+    setRetestError("");
+
+    try {
+      const result = await createRetest(report.id, "missed_terms");
+
+      navigate(`/retests/${result.id}`, {
+        state: {
+          retestId: result.id,
+          reportId: report.id,
+          lessonId: report.lesson.id,
+          topic: report.lesson.title,
+          studentName: report.lesson.persona_name,
+        },
+      });
+    } catch (error) {
+      console.error("재시험 출제 실패:", {
+        code: error.code,
+        status: error.status,
+        requestId: error.requestId,
+      });
+
+      if (error.code === "UNAUTHORIZED") {
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      if (error.code === "NICKNAME_REQUIRED") {
+        navigate("/nickname", { replace: true });
+        return;
+      }
+
+      if (error.code === "NOT_FOUND" || error.code === "FORBIDDEN") {
+        navigate("/home", {
+          replace: true,
+          state: {
+            errorMessage: "성장보고서를 찾을 수 없어요.",
+          },
+        });
+        return;
+      }
+
+      if (error.code === "RETEST_GENERATING") {
+        setRetestError(
+          "이미 재시험을 출제하고 있어요. 출제가 진행 중인 재시험을 확인한 뒤 다시 시도해 주세요.",
+        );
+        return;
+      }
+
+      if (error.code === "VALIDATION_ERROR") {
+        setRetestError(
+          "재시험 출제 범위가 올바르지 않아요. 다시 시도해 주세요.",
+        );
+        return;
+      }
+
+      setRetestError("재시험 출제에 실패했어요. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setIsCreatingRetest(false);
+    }
   };
 
   if (!reportId) {
@@ -132,6 +188,7 @@ function GrowthReportPage() {
 
         <div className="growth-report-page__state">
           <p>성장보고서 ID가 없어요.</p>
+
           <button type="button" onClick={() => navigate("/reports")}>
             보고서 목록으로
           </button>
@@ -333,6 +390,7 @@ function GrowthReportPage() {
                       {term.status === "mentioned"
                         ? "이름만 언급"
                         : "설명하지 않음"}
+
                       {term.wrong_count > 0
                         ? ` · 관련 문제 ${term.wrong_count}개 오답`
                         : ""}
@@ -378,11 +436,21 @@ function GrowthReportPage() {
           type="button"
           className="growth-report-page__retest-button"
           onClick={handleRetest}
+          disabled={isCreatingRetest}
         >
           <img src={pencilIcon} alt="" />
-          <span>직접 재시험 보기</span>
+
+          <span>
+            {isCreatingRetest ? "재시험 출제 요청 중..." : "직접 재시험 보기"}
+          </span>
         </button>
       </div>
+
+      {retestError && (
+        <p className="growth-report-page__retest-error" role="alert">
+          {retestError}
+        </p>
+      )}
     </div>
   );
 }

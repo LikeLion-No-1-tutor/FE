@@ -456,3 +456,15 @@
     width: 100%;
   }
 }
+.growth-report-page__retest-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.growth-report-page__retest-error {
+  margin: 12px 0 0;
+  color: var(--color-danger, #bc6557);
+  font-size: 13px;
+  text-align: right;
+  line-height: 1.6;
+}
