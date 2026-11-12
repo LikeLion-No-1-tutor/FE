@@ -706,8 +706,7 @@ function TeachingPage() {
                 handleSend();
               }}
             >
-              <input
-                type="text"
+              <textarea
                 className="teaching-page__input"
                 placeholder={
                   replyToId !== null
@@ -716,7 +715,18 @@ function TeachingPage() {
                 }
                 value={inputValue}
                 onChange={(event) => setInputValue(event.target.value)}
+                onKeyDown={(event) => {
+                  if (
+                    event.key === "Enter" &&
+                    !event.shiftKey &&
+                    !event.nativeEvent.isComposing
+                  ) {
+                    event.preventDefault();
+                    handleSend();
+                  }
+                }}
                 maxLength={3000}
+                rows={1}
                 disabled={isBusy}
               />
 
