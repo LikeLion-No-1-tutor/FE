@@ -281,7 +281,20 @@ function NotePage() {
     if (note) {
       return (
         <div className="note-page__markdown">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              h1: ({ children }) => {
+                const heading = String(children);
+
+                if (heading.includes("정리노트")) {
+                  return null;
+                }
+
+                return <h1>{children}</h1>;
+              },
+            }}
+          >
             {note.content}
           </ReactMarkdown>
         </div>
