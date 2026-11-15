@@ -110,7 +110,15 @@ function GrowthReportPage() {
   };
 
   const handleRetryTeaching = () => {
-    navigate("/upload");
+    if (!lesson?.id) return;
+
+    navigate("/upload", {
+      state: {
+        reuseLessonId: lesson.id,
+        reuseLessonTitle: lesson.title,
+        reusePersonaName: lesson.persona_name,
+      },
+    });
   };
 
   const handleRetest = async () => {

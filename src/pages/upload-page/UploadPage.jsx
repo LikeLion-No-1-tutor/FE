@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import PageHeader from "../../components/common/PageHeader";
 import uploadCloudIcon from "../../assets/icons/upload-cloud.svg";
@@ -13,7 +13,7 @@ import elementaryImage from "../../assets/images/element5-KimHaRin.svg";
 
 import { getPersonas } from "../../api/personaApi";
 import { uploadMaterial, getMaterialStatus } from "../../api/materialApi";
-import { startLesson } from "../../api/lessonApi";
+import { getLesson, startLesson } from "../../api/lessonApi";
 
 import "./UploadPage.css";
 
@@ -126,7 +126,7 @@ function getErrorMessage(error) {
       return "자료 정리가 아직 끝나지 않았어요. 다시 확인해 주세요.";
 
     case "MATERIAL_ALREADY_USED":
-      return "이미 수업에 사용한 자료예요. 새 자료를 올려 주세요.";
+      return "현재 서버에서는 사용한 자료로 새 수업을 만들 수 없어요. 기존 파일을 다시 업로드해 주세요.";
 
     case "PROCESSING_TIMEOUT":
       return "자료 정리가 계속 진행 중이에요. 잠시 후 다시 확인해 주세요.";
@@ -181,6 +181,7 @@ async function waitForMaterialReady(materialId, onProgress, isActive) {
 
 function UploadPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const fileInputRef = useRef(null);
   const mountedRef = useRef(true);
   const submittingRef = useRef(false);
@@ -190,6 +191,11 @@ function UploadPage() {
   const [personaError, setPersonaError] = useState("");
 
   const [selectedFile, setSelectedFile] = useState(null);
+  const [reuseMaterial, setReuseMaterial] = useState(null);
+  const [reusePersona, setReusePersona] = useState(null);
+  const [isLoadingReuse, setIsLoadingReuse] = useState(
+    Boolean(location.state?.reuseLessonId),
+  );
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [fileError, setFileError] = useState("");
@@ -203,18 +209,21 @@ function UploadPage() {
 
   const [pendingMaterialId, setPendingMaterialId] = useState(null);
 
-  const defaultTitle = selectedFile ? getFileTitle(selectedFile.name) : "";
+  const defaultTitle = selectedFile
+    ? getFileTitle(selectedFile.name)
+    : reuseMaterial?.title || "";
 
   const finalTitle = customTitle.trim() || defaultTitle;
 
   const isTitleValid = finalTitle.length >= 1 && finalTitle.length <= 100;
 
   const canStart =
-    selectedFile !== null &&
+    (selectedFile !== null || reuseMaterial !== null) &&
     selectedStudent !== null &&
     isTitleValid &&
     !isGenerating &&
-    !isLoadingPersonas;
+    !isLoadingPersonas &&
+    !isLoadingReuse;
 
   useEffect(() => {
     mountedRef.current = true;
@@ -265,6 +274,73 @@ function UploadPage() {
     };
   }, [navigate]);
 
+  useEffect(() => {
+    const sourceLessonId = location.state?.reuseLessonId;
+    if (!sourceLessonId) return;
+
+    let cancelled = false;
+    setIsLoadingReuse(true);
+
+    const loadPreviousMaterial = async () => {
+      try {
+        const previousLesson = await getLesson(sourceLessonId);
+        if (cancelled) return;
+
+        const material = previousLesson.material;
+        if (material?.id == null) {
+          setGenerateError(
+            "기존 학습 자료 ID를 확인할 수 없어요. 새 파일을 업로드해 주세요.",
+          );
+          return;
+        }
+
+        setReuseMaterial({
+          id: material.id,
+          title:
+            material.title ||
+            location.state?.reuseLessonTitle ||
+            "기존 학습 자료",
+          fileName:
+            material.file_name ||
+            material.filename ||
+            material.title ||
+            "기존 학습 자료",
+        });
+        setReusePersona({
+          id: previousLesson.persona?.id ?? previousLesson.persona_id ?? null,
+          name:
+            previousLesson.persona?.name ||
+            location.state?.reusePersonaName ||
+            "",
+          code: previousLesson.persona?.code || null,
+        });
+      } catch (error) {
+        if (cancelled) return;
+        setGenerateError(
+          "이전 수업의 자료 정보를 가져오지 못했어요. 새 파일을 업로드해 주세요.",
+        );
+      } finally {
+        if (!cancelled) setIsLoadingReuse(false);
+      }
+    };
+
+    loadPreviousMaterial();
+    return () => {
+      cancelled = true;
+    };
+  }, [location.state?.reuseLessonId]);
+
+  useEffect(() => {
+    if (!reusePersona || personas.length === 0) return;
+    const selected = personas.find(
+      (student) =>
+        student.id === reusePersona.id ||
+        (reusePersona.code && student.code === reusePersona.code) ||
+        (reusePersona.name && student.name === reusePersona.name),
+    );
+    if (selected) setSelectedStudent(selected.id);
+  }, [reusePersona, personas]);
+
   const handleFile = (file) => {
     if (!file || isGenerating) return;
 
@@ -277,6 +353,7 @@ function UploadPage() {
     }
 
     setSelectedFile(file);
+    setReuseMaterial(null);
     setCustomTitle("");
     setFileError("");
     setGenerateError("");
@@ -334,37 +411,38 @@ function UploadPage() {
     submittingRef.current = true;
     setIsGenerating(true);
     setGenerateError("");
-    setProcessingStatus("uploading");
+    setProcessingStatus(reuseMaterial ? "starting" : "uploading");
     setProcessingStepsState(null);
 
     try {
-      let materialId = pendingMaterialId;
+      let materialId = reuseMaterial?.id ?? pendingMaterialId;
 
-      if (materialId == null) {
-        const material = await uploadMaterial({
-          title: finalTitle,
-          file: selectedFile,
-        });
+      if (!reuseMaterial) {
+        if (materialId == null) {
+          const material = await uploadMaterial({
+            title: finalTitle,
+            file: selectedFile,
+          });
 
-        if (!mountedRef.current) return;
-
-        materialId = material.id;
-        setPendingMaterialId(materialId);
-      }
-
-      setProcessingStatus("processing");
-
-      const readyMaterial = await waitForMaterialReady(
-        materialId,
-        (material) => {
           if (!mountedRef.current) return;
 
-          setProcessingStepsState(material.steps);
-        },
-        () => mountedRef.current,
-      );
+          materialId = material.id;
+          setPendingMaterialId(materialId);
+        }
 
-      if (!mountedRef.current || !readyMaterial) return;
+        setProcessingStatus("processing");
+
+        const readyMaterial = await waitForMaterialReady(
+          materialId,
+          (material) => {
+            if (!mountedRef.current) return;
+            setProcessingStepsState(material.steps);
+          },
+          () => mountedRef.current,
+        );
+
+        if (!mountedRef.current || !readyMaterial) return;
+      }
 
       setProcessingStatus("starting");
 
@@ -384,7 +462,10 @@ function UploadPage() {
 
       sessionStorage.setItem("teachingStudentId", student.code);
 
-      sessionStorage.setItem("teachingFileName", selectedFile.name);
+      sessionStorage.setItem(
+        "teachingFileName",
+        selectedFile?.name || reuseMaterial?.fileName || finalTitle,
+      );
 
       sessionStorage.setItem(
         "teachingTitle",
@@ -401,7 +482,7 @@ function UploadPage() {
           personaId: student.id,
           studentName: lesson.persona?.name || student.name,
           studentLevel: getStudentLabel(student),
-          fileName: selectedFile.name,
+          fileName: selectedFile?.name || reuseMaterial?.fileName || finalTitle,
           terms: lesson.terms || [],
           messages: lesson.messages || [],
         },
@@ -516,12 +597,16 @@ function UploadPage() {
               className="upload-page__upload-icon"
             />
 
-            {selectedFile ? (
+            {selectedFile || reuseMaterial ? (
               <>
-                <p className="upload-page__file-name">{selectedFile.name}</p>
+                <p className="upload-page__file-name">
+                  {selectedFile?.name || reuseMaterial?.fileName}
+                </p>
 
                 <span className="upload-page__file-description">
-                  다른 파일을 선택하려면 클릭해 주세요.
+                  {reuseMaterial
+                    ? "이전 수업의 자료가 선택되어 있어요. 다른 파일을 선택하려면 클릭해 주세요."
+                    : "다른 파일을 선택하려면 클릭해 주세요."}
                 </span>
               </>
             ) : (
