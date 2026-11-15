@@ -9,7 +9,6 @@ import UploadPage from "../pages/upload-page/UploadPage";
 import TeachingPage from "../pages/teaching-page/TeachingPage";
 import NoteListPage from "../pages/note-list-page/NoteListPage";
 import NotePage from "../pages/note-page/NotePage";
-import AssessmentPage from "../pages/assessment-page/AssessmentPage";
 import GrowthReportPage from "../pages/growth-report-page/GrowthReportPage";
 import RetestPage from "../pages/retest-page/RetestPage";
 import RetestResultPage from "../pages/retest-result-page/RetestResultPage";
@@ -59,10 +58,6 @@ export const AppRouter = createBrowserRouter([
       {
         path: "/lessons/:lessonId/note",
         element: <NotePage />,
-      },
-      {
-        path: "/assessment",
-        element: <AssessmentPage />,
       },
       {
         path: "/reports",
