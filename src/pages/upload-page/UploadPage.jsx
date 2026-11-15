@@ -106,7 +106,7 @@ function getStudentDescription(student) {
 }
 
 function getErrorMessage(error) {
-  switch (error.code) {
+  switch (error?.code) {
     case "VALIDATION_ERROR":
       return "수업 제목과 학습 자료를 확인해 주세요.";
 
@@ -126,7 +126,7 @@ function getErrorMessage(error) {
       return "자료 정리가 아직 끝나지 않았어요. 다시 확인해 주세요.";
 
     case "MATERIAL_ALREADY_USED":
-      return "현재 서버에서는 사용한 자료로 새 수업을 만들 수 없어요. 기존 파일을 다시 업로드해 주세요.";
+      return "현재 서버에서는 이전 학습 자료를 재사용할 수 없어요. 같은 파일을 다시 업로드해 주세요.";
 
     case "PROCESSING_TIMEOUT":
       return "자료 정리가 계속 진행 중이에요. 잠시 후 다시 확인해 주세요.";
@@ -145,11 +145,15 @@ function sleep(ms) {
 
 async function waitForMaterialReady(materialId, onProgress, isActive) {
   for (let attempt = 0; attempt < 120; attempt += 1) {
-    if (!isActive()) return null;
+    if (!isActive()) {
+      return null;
+    }
 
     const material = await getMaterialStatus(materialId);
 
-    if (!isActive()) return null;
+    if (!isActive()) {
+      return null;
+    }
 
     onProgress(material);
 
@@ -174,6 +178,7 @@ async function waitForMaterialReady(materialId, onProgress, isActive) {
   }
 
   const error = new Error("자료 정리가 아직 완료되지 않았습니다.");
+
   error.code = "PROCESSING_TIMEOUT";
 
   throw error;
@@ -182,6 +187,7 @@ async function waitForMaterialReady(materialId, onProgress, isActive) {
 function UploadPage() {
   const navigate = useNavigate();
   const location = useLocation();
+
   const fileInputRef = useRef(null);
   const mountedRef = useRef(true);
   const submittingRef = useRef(false);
@@ -193,10 +199,12 @@ function UploadPage() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [reuseMaterial, setReuseMaterial] = useState(null);
   const [reusePersona, setReusePersona] = useState(null);
+
   const [isLoadingReuse, setIsLoadingReuse] = useState(
     Boolean(location.state?.reuseLessonId),
   );
-  const [selectedStudent, setSelectedStudent] = useState(null);
+
+  const [manualStudentId, setManualStudentId] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [fileError, setFileError] = useState("");
 
@@ -208,6 +216,21 @@ function UploadPage() {
   const [processingStepsState, setProcessingStepsState] = useState(null);
 
   const [pendingMaterialId, setPendingMaterialId] = useState(null);
+
+  const reuseLessonId = location.state?.reuseLessonId;
+  const reuseLessonTitle = location.state?.reuseLessonTitle;
+  const reusePersonaName = location.state?.reusePersonaName;
+
+  const previousStudent = reusePersona
+    ? personas.find(
+        (student) =>
+          String(student.id) === String(reusePersona.id) ||
+          (reusePersona.code && student.code === reusePersona.code) ||
+          (reusePersona.name && student.name === reusePersona.name),
+      )
+    : null;
+
+  const selectedStudent = manualStudentId ?? previousStudent?.id ?? null;
 
   const defaultTitle = selectedFile
     ? getFileTitle(selectedFile.name)
@@ -227,20 +250,29 @@ function UploadPage() {
 
   useEffect(() => {
     mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
 
     const fetchPersonas = async () => {
-      setIsLoadingPersonas(true);
-      setPersonaError("");
-
       try {
         const data = await getPersonas();
 
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
 
         setPersonas(data);
+        setPersonaError("");
       } catch (error) {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
 
         console.error("학생 목록 조회 실패:", {
           code: error.code,
@@ -270,90 +302,108 @@ function UploadPage() {
 
     return () => {
       cancelled = true;
-      mountedRef.current = false;
     };
   }, [navigate]);
 
   useEffect(() => {
-    const sourceLessonId = location.state?.reuseLessonId;
-    if (!sourceLessonId) return;
+    if (!reuseLessonId) {
+      return;
+    }
 
     let cancelled = false;
-    setIsLoadingReuse(true);
 
     const loadPreviousMaterial = async () => {
       try {
-        const previousLesson = await getLesson(sourceLessonId);
-        if (cancelled) return;
+        const previousLesson = await getLesson(reuseLessonId);
 
-        const material = previousLesson.material;
+        if (cancelled) {
+          return;
+        }
+
+        const material = previousLesson?.material;
+
         if (material?.id == null) {
+          setReuseMaterial(null);
           setGenerateError(
-            "기존 학습 자료 ID를 확인할 수 없어요. 새 파일을 업로드해 주세요.",
+            "기존 학습 자료를 불러올 수 없어요. 파일을 다시 업로드해 주세요.",
           );
           return;
         }
 
         setReuseMaterial({
           id: material.id,
-          title:
-            material.title ||
-            location.state?.reuseLessonTitle ||
-            "기존 학습 자료",
+          title: material.title || reuseLessonTitle || "기존 학습 자료",
           fileName:
             material.file_name ||
             material.filename ||
             material.title ||
             "기존 학습 자료",
         });
+
         setReusePersona({
-          id: previousLesson.persona?.id ?? previousLesson.persona_id ?? null,
-          name:
-            previousLesson.persona?.name ||
-            location.state?.reusePersonaName ||
-            "",
-          code: previousLesson.persona?.code || null,
+          id: previousLesson?.persona?.id ?? previousLesson?.persona_id ?? null,
+          name: previousLesson?.persona?.name || reusePersonaName || "",
+          code: previousLesson?.persona?.code || null,
         });
+
+        setSelectedFile(null);
+        setPendingMaterialId(null);
+        setFileError("");
+        setGenerateError("");
       } catch (error) {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
+
+        console.error("기존 수업 정보 조회 실패:", {
+          code: error.code,
+          status: error.status,
+          requestId: error.requestId,
+        });
+
+        if (error.code === "NICKNAME_REQUIRED") {
+          navigate("/nickname", { replace: true });
+          return;
+        }
+
+        if (error.code === "UNAUTHORIZED") {
+          navigate("/login", { replace: true });
+          return;
+        }
+
+        setReuseMaterial(null);
         setGenerateError(
           "이전 수업의 자료 정보를 가져오지 못했어요. 새 파일을 업로드해 주세요.",
         );
       } finally {
-        if (!cancelled) setIsLoadingReuse(false);
+        if (!cancelled) {
+          setIsLoadingReuse(false);
+        }
       }
     };
 
     loadPreviousMaterial();
+
     return () => {
       cancelled = true;
     };
-  }, [location.state?.reuseLessonId]);
-
-  useEffect(() => {
-    if (!reusePersona || personas.length === 0) return;
-    const selected = personas.find(
-      (student) =>
-        student.id === reusePersona.id ||
-        (reusePersona.code && student.code === reusePersona.code) ||
-        (reusePersona.name && student.name === reusePersona.name),
-    );
-    if (selected) setSelectedStudent(selected.id);
-  }, [reusePersona, personas]);
+  }, [reuseLessonId, reuseLessonTitle, reusePersonaName, navigate]);
 
   const handleFile = (file) => {
-    if (!file || isGenerating) return;
+    if (!file || isGenerating) {
+      return;
+    }
 
     const extension = file.name.split(".").pop()?.toLowerCase();
 
     if (!allowedExtensions.includes(extension)) {
       setFileError("지원하지 않는 파일 형식이에요.");
-      setSelectedFile(null);
       return;
     }
 
     setSelectedFile(file);
     setReuseMaterial(null);
+    setReusePersona(null);
     setCustomTitle("");
     setFileError("");
     setGenerateError("");
@@ -371,30 +421,43 @@ function UploadPage() {
     event.preventDefault();
     setIsDragging(false);
 
-    if (isGenerating) return;
+    if (isGenerating) {
+      return;
+    }
 
     handleFile(event.dataTransfer.files?.[0]);
   };
 
   const handleApiError = (error) => {
     console.error("수업 준비 실패:", {
-      code: error.code,
-      status: error.status,
-      requestId: error.requestId,
+      code: error?.code,
+      status: error?.status,
+      requestId: error?.requestId,
     });
 
-    if (error.code === "NICKNAME_REQUIRED") {
+    if (error?.code === "NICKNAME_REQUIRED") {
       navigate("/nickname", { replace: true });
       return;
     }
 
-    if (error.code === "UNAUTHORIZED") {
+    if (error?.code === "UNAUTHORIZED") {
       navigate("/login", { replace: true });
       return;
     }
 
-    if (error.code === "FORBIDDEN" || error.code === "NOT_FOUND") {
-      setGenerateError("자료를 찾을 수 없어요.");
+    if (error?.code === "MATERIAL_ALREADY_USED") {
+      setReuseMaterial(null);
+      setPendingMaterialId(null);
+
+      setGenerateError(
+        "현재 서버에서는 이전 학습 자료를 재사용할 수 없어요. 같은 파일을 다시 업로드해 주세요.",
+      );
+
+      return;
+    }
+
+    if (error?.code === "FORBIDDEN" || error?.code === "NOT_FOUND") {
+      setGenerateError("학습 자료를 찾을 수 없어요.");
       return;
     }
 
@@ -402,11 +465,15 @@ function UploadPage() {
   };
 
   const handleStart = async () => {
-    if (!canStart || submittingRef.current) return;
+    if (!canStart || submittingRef.current) {
+      return;
+    }
 
     const student = personas.find((item) => item.id === selectedStudent);
 
-    if (!student) return;
+    if (!student) {
+      return;
+    }
 
     submittingRef.current = true;
     setIsGenerating(true);
@@ -424,7 +491,9 @@ function UploadPage() {
             file: selectedFile,
           });
 
-          if (!mountedRef.current) return;
+          if (!mountedRef.current) {
+            return;
+          }
 
           materialId = material.id;
           setPendingMaterialId(materialId);
@@ -435,13 +504,18 @@ function UploadPage() {
         const readyMaterial = await waitForMaterialReady(
           materialId,
           (material) => {
-            if (!mountedRef.current) return;
+            if (!mountedRef.current) {
+              return;
+            }
+
             setProcessingStepsState(material.steps);
           },
           () => mountedRef.current,
         );
 
-        if (!mountedRef.current || !readyMaterial) return;
+        if (!mountedRef.current || !readyMaterial) {
+          return;
+        }
       }
 
       setProcessingStatus("starting");
@@ -451,7 +525,14 @@ function UploadPage() {
         personaId: student.id,
       });
 
-      if (!mountedRef.current) return;
+      if (!mountedRef.current) {
+        return;
+      }
+
+      const fileName =
+        selectedFile?.name || reuseMaterial?.fileName || finalTitle;
+
+      const lessonTitle = lesson.material?.title || finalTitle;
 
       sessionStorage.setItem("lesson_id", String(lesson.id));
 
@@ -462,33 +543,29 @@ function UploadPage() {
 
       sessionStorage.setItem("teachingStudentId", student.code);
 
-      sessionStorage.setItem(
-        "teachingFileName",
-        selectedFile?.name || reuseMaterial?.fileName || finalTitle,
-      );
+      sessionStorage.setItem("teachingFileName", fileName);
 
-      sessionStorage.setItem(
-        "teachingTitle",
-        lesson.material?.title || finalTitle,
-      );
+      sessionStorage.setItem("teachingTitle", lessonTitle);
 
       navigate("/teaching", {
         state: {
           lessonId: lesson.id,
           lesson,
-          topic: lesson.material?.title || finalTitle,
-          title: lesson.material?.title || finalTitle,
+          topic: lessonTitle,
+          title: lessonTitle,
           studentId: student.code,
           personaId: student.id,
           studentName: lesson.persona?.name || student.name,
           studentLevel: getStudentLabel(student),
-          fileName: selectedFile?.name || reuseMaterial?.fileName || finalTitle,
+          fileName,
           terms: lesson.terms || [],
           messages: lesson.messages || [],
         },
       });
     } catch (error) {
-      if (!mountedRef.current) return;
+      if (!mountedRef.current) {
+        return;
+      }
 
       handleApiError(error);
     } finally {
@@ -505,8 +582,10 @@ function UploadPage() {
     switch (status) {
       case "done":
         return "완료";
+
       case "running":
         return "진행 중";
+
       default:
         return "대기 중";
     }
@@ -574,7 +653,9 @@ function UploadPage() {
               }
             }}
             onKeyDown={(event) => {
-              if (isGenerating) return;
+              if (isGenerating) {
+                return;
+              }
 
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
@@ -609,6 +690,10 @@ function UploadPage() {
                     : "다른 파일을 선택하려면 클릭해 주세요."}
                 </span>
               </>
+            ) : isLoadingReuse ? (
+              <p className="upload-page__upload-title">
+                이전 학습 자료를 불러오는 중...
+              </p>
             ) : (
               <>
                 <p className="upload-page__upload-title">파일을 올려주세요</p>
@@ -656,7 +741,7 @@ function UploadPage() {
                     className={`upload-page__student ${
                       isSelected ? "upload-page__student--selected" : ""
                     }`}
-                    onClick={() => setSelectedStudent(student.id)}
+                    onClick={() => setManualStudentId(student.id)}
                     aria-pressed={isSelected}
                     disabled={isGenerating}
                   >
@@ -728,6 +813,7 @@ function UploadPage() {
                   return (
                     <div key={step.key} className="upload-page__progress-item">
                       <span>{step.label}</span>
+
                       <strong>{getStepText(status)}</strong>
                     </div>
                   );
